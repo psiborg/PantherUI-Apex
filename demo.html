@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PantherUI — 3D Carousel Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="PantherUI.css" />
+<link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+
+<div id="shell">
+
+  <!-- -- Top Bar ---------------------------------------------- -->
+  <header id="topbar">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      PantherUI
+      <span class="logo-version">v2.0</span>
+    </div>
+    <div class="topbar-status">
+      <span class="status-dot"></span>
+      3D CAROUSEL SYSTEM ACTIVE
+    </div>
+  </header>
+
+  <!-- -- Sidebar ---------------------------------------------- -->
+  <aside id="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="ctrl-group">
+        <div class="ctrl-label">Rotate carousel</div>
+        <div class="ctrl-row">
+          <button onclick="prevPanel()">◀ Prev</button>
+          <button onclick="nextPanel()">Next ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Jump to panel</div>
+      <div id="jump-btn-row" class="side-btn-row">
+        <!-- dynamically populated by buildJumpButtons() -->
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Panels</div>
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button onclick="removeLastPanel()">－ Remove</button>
+          <button class="primary" onclick="addNewPanel()">＋ Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Snap Easing</div>
+      <div class="ctrl-group">
+        <select id="easing-select" onchange="setEasing(this.value)">
+          <option value="ease" selected >ease (default)</option>
+          <option value="linear">linear</option>
+          <option value="easeIn">easeIn</option>
+          <option value="easeOut">easeOut</option>
+          <option value="easeInOut">easeInOut</option>
+          <option value="easeInOutSine">easeInOutSine</option>
+          <option value="easeInOutCubic">easeInOutCubic</option>
+          <option value="easeInOutQuart">easeInOutQuart</option>
+          <option value="easeInOutQuint">easeInOutQuint</option>
+          <option value="easeOutBack">easeOutBack (spring)</option>
+          <option value="easeOutExpo">easeOutExpo (snappy)</option>
+          <option value="easeInOutBack">easeInOutBack (bouncy)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Event Log</div>
+      <div id="log-box">
+        <div class="log-entry highlight">System ready.</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- -- Stage ------------------------------------------------ -->
+  <main id="stage">
+
+    <div id="indicator"></div>
+
+    <div class="panther-Carousel-container" id="main-container"
+         style="top:8%;left:10%;width:80%;height:84%;">
+      <div class="panther-Carousel-carousel" id="main-carousel">
+        <!-- Panels injected by demo.js -->
+      </div>
+    </div>
+
+    <div id="hint">← → ROTATE · ↑ MAXIMIZE · ↓ RESTORE</div>
+
+  </main>
+
+  <!-- -- Bottom Bar -------------------------------------------- -->
+  <footer id="bottombar">
+    <div class="info-strip">
+      <div class="info-item">
+        <span class="info-key">Current Panel</span>
+        <span class="info-val"><span id="info-side">1</span></span>
+      </div>
+      <div class="info-item">
+        <span class="info-key">Total Panels</span>
+        <span class="info-val"><span id="info-count">5</span></span>
+      </div>
+      <div class="info-item">
+        <span class="info-key">Rotation</span>
+        <span class="info-val"><span id="info-rotation">0°</span></span>
+      </div>
+    </div>
+    <div class="credit">Jim Ing · Apache 2.0</div>
+  </footer>
+
+</div>
+
+<script src="PantherUI.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>

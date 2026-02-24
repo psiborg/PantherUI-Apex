@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PantherUI — Basic Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="PantherUI.css" />
+<link rel="stylesheet" href="demo-basic.css" />
+</head>
+<body>
+
+<div id="stage">
+
+  <div id="hint">← → ROTATE · ↑ MAXIMIZE · ↓ RESTORE</div>
+
+  <div class="panther-Carousel-container" id="main-container"
+       style="top:5%;left:5%;width:90%;height:90%;">
+    <div class="panther-Carousel-carousel" id="main-carousel">
+
+      <!-- -- Panel 1 ----------------------------------------------- -->
+      <figure style="background-color:#1c1c1c;">
+        <div class="panther-Carousel-panelTitleBar">
+          <span class="panther-Carousel-panelTitle">OVERVIEW</span>
+        </div>
+        <div class="panther-Carousel-panelContent">
+          <div class="panel-accent p-accent-orange"></div>
+          <div class="panel-body">
+            <p class="panel-heading">PantherUI 3D Carousel</p>
+            <p class="panel-desc">A GPU-accelerated, CSS-based 3D carousel built with
+            <em>preserve-3d</em> transforms. Panels are arranged as faces of a geometric
+            prism and rotated smoothly in 3D space.</p>
+            <p class="panel-credit">Originally by Jim Ing for BlackBerry, 2013–2014.</p>
+          </div>
+          <ul>
+            <li>ES6 class-based architecture</li>
+            <li>Touch &amp; mouse gesture support</li>
+            <li>Maximize / restore panels</li>
+            <li>Dynamic panel injection</li>
+          </ul>
+        </div>
+      </figure>
+
+      <!-- -- Panel 2 ----------------------------------------------- -->
+      <figure style="background-color:#1a2626;">
+        <div class="panther-Carousel-panelTitleBar">
+          <span class="panther-Carousel-panelTitle">GEOMETRY</span>
+        </div>
+        <div class="panther-Carousel-panelContent">
+          <div class="panel-accent p-accent-teal"></div>
+          <div class="panel-body" style="color:#8dd;">
+            <p class="panel-heading" style="color:#aee;">Trigonometric Placement</p>
+            <p class="panel-desc" style="color:#7aa;">Each panel is rotated at equal angular
+            intervals and translated outward using the inscribed polygon radius.</p>
+          </div>
+          <ul>
+            <li>θ = 360° / panelCount</li>
+            <li>r = (w/2) / tan(π / n)</li>
+            <li>transform: rotateY(θ·i) translateZ(r)</li>
+            <li>Min. 3 panels required</li>
+            <li>Recalculates on resize</li>
+          </ul>
+        </div>
+      </figure>
+
+      <!-- -- Panel 3 ----------------------------------------------- -->
+      <figure style="background-color:#1a1c26;">
+        <div class="panther-Carousel-panelTitleBar">
+          <span class="panther-Carousel-panelTitle">INTERACTION</span>
+        </div>
+        <div class="panther-Carousel-panelContent">
+          <div class="panel-accent p-accent-blue"></div>
+          <div class="panel-body" style="color:#aac;">
+            <p class="panel-heading" style="color:#aaf;">Input System</p>
+            <p class="panel-desc" style="color:#889;">Unified pointer model handles mouse,
+            touch, and stylus. A minimum drag threshold prevents accidental rotations.</p>
+          </div>
+          <ul>
+            <li>Pointer Events API (unified)</li>
+            <li>setPointerCapture for reliable drag</li>
+            <li>6px minimum drag deadzone</li>
+            <li>Flick velocity detection</li>
+            <li>Debounced resize listener</li>
+          </ul>
+        </div>
+      </figure>
+
+      <!-- -- Panel 4 ----------------------------------------------- -->
+      <figure style="background-color:#1a2218;">
+        <div class="panther-Carousel-panelTitleBar">
+          <span class="panther-Carousel-panelTitle">CONTROLS</span>
+        </div>
+        <div class="panther-Carousel-panelContent">
+          <div class="panel-accent p-accent-green"></div>
+          <div class="panel-body" style="color:#aca;">
+            <p class="panel-heading" style="color:#8da;">Public API</p>
+            <p class="panel-desc" style="color:#779;">All navigation is exposed as clean
+            methods on the <code style="color:#4d8;">Panther.Carousel</code> namespace.</p>
+          </div>
+          <ul>
+            <li>Carousel.init(opts)</li>
+            <li>Carousel.turnNext(id)</li>
+            <li>Carousel.turnPrev(id)</li>
+            <li>Carousel.turnTo(id, side)</li>
+            <li>Carousel.refresh()</li>
+          </ul>
+        </div>
+      </figure>
+
+      <!-- -- Panel 5 ----------------------------------------------- -->
+      <figure style="background-color:#1e1a26;">
+        <div class="panther-Carousel-panelTitleBar">
+          <span class="panther-Carousel-panelTitle">API</span>
+        </div>
+        <div class="panther-Carousel-panelContent">
+          <div class="panel-accent p-accent-purple"></div>
+          <div class="panel-body" style="color:#c8b;">
+            <p class="panel-heading" style="color:#d4a;">Options</p>
+            <p class="panel-desc" style="color:#887;">Carousels are fully configurable at
+            initialization and support runtime callbacks.</p>
+          </div>
+          <ul>
+            <li>id: string (required)</li>
+            <li>backgroundColor: css color</li>
+            <li>easing: named key or css string</li>
+            <li>callback: fn(carousel)</li>
+            <li>callbackBreak: boolean</li>
+          </ul>
+        </div>
+      </figure>
+
+    </div><!-- /.panther-Carousel-carousel -->
+  </div><!-- /.panther-Carousel-container -->
+
+  <div id="indicator"></div>
+
+</div><!-- /#stage -->
+
+<script src="PantherUI.js"></script>
+<script src="demo-basic.js"></script>
+</body>
+</html>

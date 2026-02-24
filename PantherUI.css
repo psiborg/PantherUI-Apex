@@ -1,0 +1,168 @@
+/**
+ * PantherUI.css
+ * Styles for the Panther 3D Carousel component
+ *
+ * Original by Jim Ing (@jim_ing) for BlackBerry Limited (2013–2014)
+ * Refactored to modern CSS (2026)
+ *
+ * Licensed under the Apache License, Version 2.0
+ */
+
+/* --- Custom Properties ------------------------------------------------------ */
+
+:root {
+  --panther-bg:              #4a4a4a;
+  --panther-panel-bg:        #d1d1d1;
+  --panther-titlebar-bg:     #1a1a1a;
+  --panther-titlebar-color:  #ffffff;
+  --panther-titlebar-height: 14mm;
+  --panther-accent:          #cc3f10;
+  --panther-perspective:     1050px;
+  --panther-transition:      750ms ease;
+  --panther-list-odd:        #fafafa;
+  --panther-list-even:       #f0f0f0;
+  --panther-list-border:     #cccccc;
+  --panther-radius:          10px;
+}
+
+/* --- Reset ------------------------------------------------------------------ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* --- Container -------------------------------------------------------------- */
+
+/* NOTE: overflow:hidden is intentionally absent here. Side-facing panels extend
+   beyond the container bounds in 3D space, and overflow:hidden would clip their
+   hit areas — making maximize buttons on those panels unclickable. Visual
+   clipping should be provided by the container's parent element instead. */
+
+.panther-Carousel-container {
+  background-color: var(--panther-bg);
+  position: absolute;
+  perspective: var(--panther-perspective);
+  cursor: grab;
+}
+
+/* --- Carousel Track --------------------------------------------------------- */
+
+.panther-Carousel-carousel {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--panther-transition);
+}
+
+/* Disable transition during live pointer drag so the carousel tracks 1:1 */
+.panther-Carousel-carousel.is-dragging {
+  transition: none;
+}
+
+/* --- Individual Panels ------------------------------------------------------ */
+
+.panther-Carousel-carousel figure {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  user-select: none;
+}
+
+.panther-Carousel-container:has(.is-dragging) {
+  cursor: grabbing;
+}
+
+/* Scrollbar styling */
+.panther-Carousel-carousel figure::-webkit-scrollbar {
+  background-color: transparent;
+  width: 6px;
+}
+
+.panther-Carousel-carousel figure::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.panther-Carousel-carousel figure::-webkit-scrollbar-thumb {
+  background: rgba(64, 64, 64, 0.35);
+  border-radius: 3px;
+}
+
+/* --- Panel Title Bar -------------------------------------------------------- */
+
+.panther-Carousel-panelTitleBar {
+  background-color: var(--panther-titlebar-bg);
+  color: var(--panther-titlebar-color);
+  font-size: 110%;
+  text-align: center;
+  height: var(--panther-titlebar-height);
+  line-height: var(--panther-titlebar-height);
+  position: relative;
+  width: 100%;
+  z-index: 20;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* --- Panel Title Text ------------------------------------------------------- */
+
+.panther-Carousel-panelTitle {
+  display: inline-block;
+  width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* --- Panel Content Area ----------------------------------------------------- */
+
+.panther-Carousel-panelContent {
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+/* --- List Styles ------------------------------------------------------------ */
+
+.panther-Carousel-panelContent ul {
+  list-style: none;
+  margin: 2%;
+  padding: 0;
+  text-align: left;
+  width: 96%;
+  border-radius: var(--panther-radius);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.panther-Carousel-panelContent li {
+  background-color: var(--panther-list-odd);
+  border-bottom: 1px solid var(--panther-list-border);
+  color: #111;
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.panther-Carousel-panelContent li:nth-child(even) {
+  background-color: var(--panther-list-even);
+}
+
+.panther-Carousel-panelContent li:last-child {
+  border-bottom: none;
+}

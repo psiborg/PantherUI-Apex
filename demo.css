@@ -1,0 +1,420 @@
+/**
+ * demo.css
+ * Styles for PantherUI full demo page (header + sidebar + stage + footer)
+ */
+
+/* --- Design Tokens ----------------------------------------------- */
+
+:root {
+  --ink:        #0d0d0d;
+  --paper:      #f0ede8;
+  --orange:     #e84c1e;
+  --orange-dim: #b33a15;
+  --font-head:  'Syne', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- Reset & Base ------------------------------------------------ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+}
+
+/* --- Layout Shell ------------------------------------------------ */
+
+#shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 56px 1fr 80px;
+  width: 100%; height: 100%;
+  animation: fadeSlide 0.5s var(--ease-out);
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Top Bar ----------------------------------------------------- */
+
+#topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  border-bottom: 1px solid #2a2a2a;
+  background: #0d0d0d;
+  z-index: 10;
+}
+
+.logo {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 28px; height: 28px;
+  background: var(--orange);
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  flex-shrink: 0;
+}
+
+.logo-version {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 300;
+  color: #666;
+  align-self: flex-end;
+  padding-bottom: 2px;
+  letter-spacing: 0.08em;
+}
+
+.topbar-status {
+  font-size: 0.7rem;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 0.1em;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #3a3;
+  margin-right: 6px;
+  animation: blink 2s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* --- Sidebar ----------------------------------------------------- */
+
+#sidebar {
+  grid-row: 2;
+  background: #111;
+  border-right: 1px solid #222;
+  overflow-y: auto;
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-section {
+  padding: 0 0 16px 0;
+  margin: 0 0 4px 0;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.sidebar-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  color: #444;
+  text-transform: uppercase;
+  padding: 0 20px 10px;
+  font-weight: 400;
+}
+
+/* --- Controls ---------------------------------------------------- */
+
+.ctrl-group {
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ctrl-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.ctrl-row {
+  display: flex;
+  gap: 6px;
+}
+
+button {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: var(--paper);
+  padding: 7px 12px;
+  border-radius: 3px;
+  transition: all 120ms ease;
+  flex: 1;
+  white-space: nowrap;
+}
+
+button:hover  { background: #2a2a2a; border-color: #444; }
+button:active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+button.primary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+button.primary:hover { background: var(--orange-dim); border-color: var(--orange-dim); }
+
+select {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  background: #1a1a1a;
+  color: var(--paper);
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 7px 10px;
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0l5 6 5-6z' fill='%23666'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 120ms ease;
+}
+
+select:hover { border-color: #444; }
+select:focus { outline: none; border-color: var(--orange); }
+
+.side-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 10px 16px;
+}
+
+.side-btn {
+  font-size: 0.65rem;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+/* --- Event Log --------------------------------------------------- */
+
+#log-box {
+  padding: 0 16px;
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#log-box::-webkit-scrollbar { width: 3px; }
+#log-box::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.log-entry {
+  font-size: 0.62rem;
+  color: #505050;
+  line-height: 1.5;
+  border-left: 2px solid #222;
+  padding-left: 6px;
+  font-style: italic;
+  animation: logIn 0.2s var(--ease-out);
+}
+
+.log-entry.highlight {
+  color: #7a7;
+  border-left-color: #4a6;
+}
+
+@keyframes logIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* --- Stage ------------------------------------------------------- */
+
+#stage {
+  grid-row: 2;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, #1a1a1a 0%, #0d0d0d 100%);
+}
+
+#stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- PantherUI overrides ----------------------------------------- */
+
+.panther-Carousel-container {
+  background: transparent !important;
+  z-index: 1;
+}
+
+.panther-Carousel-carousel figure {
+  border-left: 1px solid rgba(255,255,255,0.06);
+}
+
+.panther-Carousel-panelTitleBar {
+  background: rgba(10,10,10,0.95) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-family: var(--font-head);
+  font-size: 0.85rem !important;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(4px);
+}
+
+.panther-Carousel-panelTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panther-Carousel-panelContent {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: #ccc;
+  padding: 14px !important;
+}
+
+.panther-Carousel-panelContent ul { box-shadow: none !important; }
+
+.panther-Carousel-panelContent li {
+  background: rgba(255,255,255,0.04) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  color: #bbb !important;
+  font-size: 0.77rem;
+}
+
+.panther-Carousel-panelContent li:nth-child(even) {
+  background: rgba(255,255,255,0.02) !important;
+}
+
+/* --- Panel accent bars ------------------------------------------- */
+
+.panel-accent { height: 3px; width: 100%; }
+.p-accent-orange { background: linear-gradient(90deg, var(--orange), #f09050); }
+.p-accent-teal   { background: linear-gradient(90deg, #1a8a8a, #2dd4bf); }
+.p-accent-blue   { background: linear-gradient(90deg, #1a4aaa, #60a5fa); }
+.p-accent-green  { background: linear-gradient(90deg, #166534, #4ade80); }
+.p-accent-purple { background: linear-gradient(90deg, #6b21a8, #c084fc); }
+
+/* --- Bottom Bar --------------------------------------------------- */
+
+#bottombar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  border-top: 1px solid #1e1e1e;
+  background: #0a0a0a;
+}
+
+.info-strip {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-key {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: #444;
+  text-transform: uppercase;
+}
+
+.info-val {
+  font-size: 0.78rem;
+  color: #888;
+  font-weight: 300;
+}
+
+.info-val span { color: var(--orange); font-weight: 400; }
+
+.credit {
+  font-size: 0.6rem;
+  color: #333;
+  letter-spacing: 0.06em;
+}
+
+/* --- Hint -------------------------------------------------------- */
+
+#hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  border: 1px solid #333;
+  color: #666;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+  animation: hintPulse 3s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* --- Dot indicators ----------------------------------------------- */
+
+#indicator {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 50;
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #333;
+  border: 1px solid #444;
+  cursor: pointer;
+  transition: all 300ms var(--ease-out);
+}
+
+.dot.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  transform: scale(1.4);
+}
