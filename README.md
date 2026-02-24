@@ -1,4 +1,4 @@
-# PantherUI — 3D Carousel
+# PantherUI-Apex
 
 ![PantherUI Screenshot](screenshot.png)
 
@@ -7,6 +7,9 @@ A GPU-accelerated, CSS `preserve-3d` carousel component. Panels are arranged as 
 Originally created by Jim Ing for BlackBerry Limited (2013–2014). Improved and refactored to modern ES6+ (2026).
 
 Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+- [Full Demo](demo.html)
+- [Basic Demo](demo-basic.html)
 
 ---
 
