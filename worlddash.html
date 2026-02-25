@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#080c10"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>WorldDash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="PantherUI.css"/>
+<style>
+/* ═══════════════════════════════════════════════════════
+   WORLDDASH — Design tokens & reset
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:           #080c10;
+  --bg2:          #0d1117;
+  --bg3:          #111820;
+  --surface:      #131b24;
+  --border:       #1e2d3d;
+  --border2:      #243040;
+  --text:         #c8d8e8;
+  --text2:        #7a9ab8;
+  --text3:        #3d5570;
+  --amber:        #e8a030;
+  --amber-dim:    #7a5018;
+  --teal:         #1ec8a0;
+  --teal-dim:     #0a4035;
+  --red:          #e84040;
+  --red-dim:      #4a1010;
+  --blue:         #3090e8;
+  --font-data:    'Space Mono', monospace;
+  --font-head:    'Syne', sans-serif;
+  --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+  --panel-bg:     #0d1520;
+  --header-h:     52px;
+  --footer-h:     36px;
+}
+
+[data-theme="light"] {
+  --bg:           #eef2f6;
+  --bg2:          #e4eaf0;
+  --bg3:          #d8e2ec;
+  --surface:      #ffffff;
+  --border:       #c0ccd8;
+  --border2:      #a8b8c8;
+  --text:         #1a2840;
+  --text2:        #4a6080;
+  --text3:        #8aa0b8;
+  --amber:        #c07010;
+  --teal:         #0a9070;
+  --red:          #c02828;
+  --panel-bg:     #f0f5fa;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-data);
+  font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════════ */
+#app {
+  display: grid;
+  grid-template-rows: var(--header-h) 1fr var(--footer-h);
+  width: 100%; height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════ */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  gap: 12px;
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.logo-text span { color: var(--amber); }
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.tb-btn {
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 5px 9px;
+  cursor: pointer;
+  transition: all 120ms ease;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.tb-btn:hover { background: var(--border); color: var(--text); }
+.tb-btn:active { background: var(--amber); border-color: var(--amber); color: #000; }
+
+.tb-btn.fetch-btn {
+  background: var(--teal-dim);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.tb-btn.fetch-btn:hover { background: var(--teal); color: #000; }
+
+.tb-sep {
+  width: 1px; height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STAGE — grid of carousels
+═══════════════════════════════════════════════════════ */
+#stage {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Grid background texture */
+#stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 0;
+  z-index: 1;
+}
+
+/* Portrait: 1 column × 4 rows */
+@media (orientation: portrait) {
+  #grid { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+}
+
+/* Landscape: 2 columns × 2 rows */
+@media (orientation: landscape) {
+  #grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+}
+
+.cell {
+  position: relative;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* PantherUI container fills each cell */
+.cell .panther-Carousel-container {
+  position: absolute;
+  inset: 0;
+  background: transparent !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL BASE STYLES
+═══════════════════════════════════════════════════════ */
+.panther-Carousel-panelTitleBar {
+  background: rgba(8,12,16,0.95) !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-family: var(--font-data) !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.12em !important;
+  color: var(--text3) !important;
+  height: 30px !important;
+  min-height: 30px !important;
+}
+
+[data-theme="light"] .panther-Carousel-panelTitleBar {
+  background: rgba(230,238,246,0.97) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.panther-Carousel-panelTitle {
+  font-size: 0.6rem !important;
+  letter-spacing: 0.14em !important;
+  color: var(--text3) !important;
+  text-transform: uppercase;
+}
+
+.panther-Carousel-panelContent {
+  padding: 0 !important;
+  height: calc(100% - 30px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL CONTENT — SIDE 1: CLOCK
+═══════════════════════════════════════════════════════ */
+.clock-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 4px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.clock-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(30,200,160,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.clock-city {
+  font-family: var(--font-head);
+  font-size: clamp(1.1rem, 3.5vw, 1.8rem);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1;
+}
+
+.clock-date {
+  font-size: clamp(0.6rem, 1.5vw, 0.75rem);
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.clock-time {
+  font-size: clamp(1.4rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--teal);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin: 6px 0;
+  text-shadow: 0 0 20px rgba(30,200,160,0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-tz {
+  font-size: clamp(0.55rem, 1.2vw, 0.68rem);
+  color: var(--text3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.clock-offset {
+  font-size: 0.6rem;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL CONTENT — SIDE 2: CURRENT WEATHER
+═══════════════════════════════════════════════════════ */
+.weather-panel {
+  height: 100%;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.weather-icon-lg {
+  font-size: 2.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.weather-temp-block {}
+
+.weather-temp {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.weather-feels {
+  font-size: 0.6rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+.weather-desc {
+  font-size: 0.68rem;
+  color: var(--text2);
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+}
+
+.w-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.w-stat-key {
+  font-size: 0.52rem;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.w-stat-val {
+  font-size: 0.72rem;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL CONTENT — SIDE 3: HOURLY FORECAST
+═══════════════════════════════════════════════════════ */
+.hourly-panel {
+  height: 100%;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.hourly-row {
+  display: grid;
+  grid-template-columns: 52px 28px 1fr 44px 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-bottom: 1px solid rgba(30,45,61,0.5);
+  transition: background 80ms;
+}
+
+.hourly-row:hover { background: rgba(30,45,61,0.3); }
+
+.hourly-time {
+  font-size: 0.62rem;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+}
+
+.hourly-icon { font-size: 1rem; text-align: center; }
+
+.hourly-desc {
+  font-size: 0.6rem;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hourly-temp {
+  font-size: 0.68rem;
+  color: var(--amber);
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+.hourly-pop {
+  font-size: 0.6rem;
+  color: var(--blue);
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL CONTENT — SIDE 4: DAILY FORECAST
+═══════════════════════════════════════════════════════ */
+.daily-panel {
+  height: 100%;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.daily-row {
+  display: grid;
+  grid-template-columns: 60px 28px 1fr 36px 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(30,45,61,0.5);
+  transition: background 80ms;
+}
+
+.daily-row:hover { background: rgba(30,45,61,0.3); }
+
+.daily-day {
+  font-size: 0.63rem;
+  color: var(--text2);
+  letter-spacing: 0.06em;
+}
+
+.daily-day.today { color: var(--teal); }
+
+.daily-icon { font-size: 1rem; text-align: center; }
+
+.daily-desc {
+  font-size: 0.58rem;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.daily-hi {
+  font-size: 0.68rem;
+  color: var(--amber);
+  text-align: right;
+}
+
+.daily-lo {
+  font-size: 0.68rem;
+  color: var(--text3);
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PANEL CONTENT — SIDE 5: ALERTS
+═══════════════════════════════════════════════════════ */
+.alerts-panel {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alert-card {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+
+.alert-event {
+  font-size: 0.68rem;
+  color: var(--red);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.alert-meta {
+  font-size: 0.56rem;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.alert-desc {
+  font-size: 0.6rem;
+  color: var(--text2);
+  line-height: 1.6;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+.no-alerts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: var(--text3);
+}
+
+.no-alerts-icon { font-size: 2rem; }
+
+.no-alerts-text {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PLACEHOLDER (no API key)
+═══════════════════════════════════════════════════════ */
+.placeholder-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+}
+
+.placeholder-icon { font-size: 2rem; opacity: 0.3; }
+
+.placeholder-text {
+  font-size: 0.62rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-align: center;
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+
+.placeholder-action {
+  font-size: 0.6rem;
+  color: var(--amber);
+  border: 1px solid var(--amber-dim);
+  padding: 5px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 120ms;
+}
+
+.placeholder-action:hover { background: var(--amber-dim); }
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER / STATUS BAR
+═══════════════════════════════════════════════════════ */
+#footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  gap: 16px;
+}
+
+#status-msg {
+  font-size: 0.6rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#status-msg.ok  { color: var(--teal); }
+#status-msg.err { color: var(--red); }
+
+.footer-timestamps {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.ts-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ts-label {
+  font-size: 0.52rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ts-val {
+  font-size: 0.58rem;
+  color: var(--text2);
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOADING SPINNER
+═══════════════════════════════════════════════════════ */
+.spinner {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════
+   SETTINGS DIALOG
+═══════════════════════════════════════════════════════ */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-overlay.open { display: flex; }
+
+.dialog {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  width: min(520px, 95vw);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  animation: dialogIn 0.2s var(--ease);
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.dialog-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 4px;
+  transition: color 120ms;
+}
+
+.dialog-close:hover { color: var(--text); }
+
+.dialog-body {
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+
+.dialog-section {}
+
+.dialog-section-title {
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.form-label {
+  font-size: 0.65rem;
+  color: var(--text2);
+  letter-spacing: 0.06em;
+  flex: 0 0 90px;
+}
+
+.form-input {
+  flex: 1;
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.form-input:focus { border-color: var(--teal); }
+
+.form-select {
+  flex: 1;
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 7px 10px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'><path d='M0 0l4 5 4-5z' fill='%233d5570'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.form-select:focus { border-color: var(--teal); outline: none; }
+
+/* Search row */
+.search-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.search-row .form-input { flex: 1; }
+
+.btn-sm {
+  font-family: var(--font-data);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  background: var(--bg3);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+
+.btn-sm:hover { background: var(--border); color: var(--text); }
+
+.btn-sm.primary {
+  background: var(--teal-dim);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.btn-sm.primary:hover { background: var(--teal); color: #000; }
+
+.btn-sm.danger {
+  background: var(--red-dim);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Location list */
+#location-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loc-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: grab;
+  transition: background 80ms;
+}
+
+.loc-item:hover { background: var(--surface); }
+.loc-item.drag-over { border-color: var(--teal); background: var(--teal-dim); }
+
+.loc-handle {
+  color: var(--text3);
+  cursor: grab;
+  font-size: 0.8rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.loc-name {
+  flex: 1;
+  font-size: 0.68rem;
+  color: var(--text);
+}
+
+.loc-country {
+  font-size: 0.58rem;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+}
+
+.loc-actions { display: flex; gap: 4px; }
+
+.loc-btn {
+  font-family: var(--font-data);
+  font-size: 0.55rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  border-radius: 2px;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: all 100ms;
+}
+
+.loc-btn:hover { color: var(--text); border-color: var(--text3); }
+.loc-btn.del:hover { color: var(--red); border-color: var(--red); }
+
+/* Import/export row */
+.ie-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dialog-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SEARCH RESULTS DROPDOWN
+═══════════════════════════════════════════════════════ */
+.search-results {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: -4px;
+  display: none;
+}
+
+.search-results.open { display: block; }
+
+.search-result-item {
+  padding: 8px 12px;
+  font-size: 0.66rem;
+  color: var(--text2);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 80ms;
+}
+
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--surface); color: var(--text); }
+
+/* Dot indicators override */
+#indicator-0, #indicator-1, #indicator-2, #indicator-3 {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--border2);
+  transition: all 250ms var(--ease);
+}
+
+.dot.active {
+  background: var(--teal);
+  transform: scale(1.5);
+}
+
+/* Fade in on load */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cell { animation: fadeUp 0.5s var(--ease) both; }
+.cell:nth-child(1) { animation-delay: 0.05s; }
+.cell:nth-child(2) { animation-delay: 0.12s; }
+.cell:nth-child(3) { animation-delay: 0.19s; }
+.cell:nth-child(4) { animation-delay: 0.26s; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── HEADER ─────────────────────────────────────── -->
+  <header id="header">
+    <div class="logo-wrap">
+      <!-- Inline panther-eyes SVG mark, scaled down -->
+      <svg class="logo-mark" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="lbg" cx="50%" cy="50%" r="70%">
+            <stop offset="0%" stop-color="#141420"/>
+            <stop offset="100%" stop-color="#060608"/>
+          </radialGradient>
+        </defs>
+        <rect width="120" height="60" fill="url(#lbg)" rx="4"/>
+        <!-- Left brow -->
+        <polygon points="8,14 28,8 18,28" fill="#1e1e2a"/>
+        <polygon points="8,14 5,34 18,28" fill="#181820"/>
+        <!-- Right brow -->
+        <polygon points="112,14 92,8 102,28" fill="#1c1c28"/>
+        <polygon points="112,14 115,34 102,28" fill="#161620"/>
+        <!-- Left iris -->
+        <polygon points="8,30 28,20 22,38" fill="#c87010"/>
+        <polygon points="8,30 22,38 18,46" fill="#a05808"/>
+        <polygon points="28,20 42,30 30,34" fill="#e8960e"/>
+        <polygon points="42,30 30,34 35,44" fill="#c06a08"/>
+        <!-- Left pupil -->
+        <polygon points="24,24 30,30 26,36" fill="#080406"/>
+        <polygon points="24,24 22,33 26,36" fill="#0a0608"/>
+        <!-- Left catchlight -->
+        <polygon points="14,24 20,22 17,28" fill="#fff8e0" opacity="0.9"/>
+        <!-- Right iris -->
+        <polygon points="112,30 92,20 98,38" fill="#c87010"/>
+        <polygon points="112,30 98,38 102,46" fill="#a05808"/>
+        <polygon points="92,20 78,30 90,34" fill="#e8960e"/>
+        <polygon points="78,30 90,34 85,44" fill="#c06a08"/>
+        <!-- Right pupil -->
+        <polygon points="96,24 90,30 94,36" fill="#080406"/>
+        <polygon points="96,24 98,33 94,36" fill="#0a0608"/>
+        <!-- Right catchlight -->
+        <polygon points="106,24 100,22 103,28" fill="#fff8e0" opacity="0.9"/>
+        <!-- Bridge -->
+        <polygon points="42,28 78,28 60,36" fill="#0e0e18"/>
+      </svg>
+      <div>
+        <div class="logo-text">World<span>Dash</span></div>
+      </div>
+    </div>
+
+    <div id="toolbar">
+      <button class="tb-btn fetch-btn" id="btn-fetch" title="Fetch weather data">⟳ FETCH</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btn-s1" title="Show clocks">1</button>
+      <button class="tb-btn" id="btn-s2" title="Show current weather">2</button>
+      <button class="tb-btn" id="btn-s3" title="Show hourly forecast">3</button>
+      <button class="tb-btn" id="btn-s4" title="Show daily forecast">4</button>
+      <button class="tb-btn" id="btn-s5" title="Show alerts">5</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btn-settings" title="Settings">⚙ SETTINGS</button>
+    </div>
+  </header>
+
+  <!-- ── STAGE ──────────────────────────────────────── -->
+  <main id="stage">
+    <div id="grid">
+      <div class="cell" id="cell-0">
+        <div class="panther-Carousel-container" id="container-0">
+          <div class="panther-Carousel-carousel" id="carousel-0"></div>
+        </div>
+        <div id="indicator-0"></div>
+      </div>
+      <div class="cell" id="cell-1">
+        <div class="panther-Carousel-container" id="container-1">
+          <div class="panther-Carousel-carousel" id="carousel-1"></div>
+        </div>
+        <div id="indicator-1"></div>
+      </div>
+      <div class="cell" id="cell-2">
+        <div class="panther-Carousel-container" id="container-2">
+          <div class="panther-Carousel-carousel" id="carousel-2"></div>
+        </div>
+        <div id="indicator-2"></div>
+      </div>
+      <div class="cell" id="cell-3">
+        <div class="panther-Carousel-container" id="container-3">
+          <div class="panther-Carousel-carousel" id="carousel-3"></div>
+        </div>
+        <div id="indicator-3"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────── -->
+  <footer id="footer">
+    <div id="status-spinner" class="spinner" style="display:none;"></div>
+    <div id="status-msg">Ready</div>
+    <div class="footer-timestamps">
+      <div class="ts-item">
+        <span class="ts-label">Updated</span>
+        <span class="ts-val" id="ts-updated">—</span>
+      </div>
+      <div class="ts-item">
+        <span class="ts-label">Next</span>
+        <span class="ts-val" id="ts-next">—</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ── SETTINGS DIALOG ────────────────────────────── -->
+<div class="dialog-overlay" id="settings-overlay">
+  <div class="dialog" role="dialog" aria-label="Settings">
+    <div class="dialog-header">
+      <div class="dialog-title">Settings</div>
+      <button class="dialog-close" id="settings-close" aria-label="Close">✕</button>
+    </div>
+    <div class="dialog-body">
+
+      <!-- Theme & Units -->
+      <div class="dialog-section">
+        <div class="dialog-section-title">Display</div>
+        <div class="form-row">
+          <label class="form-label">Theme</label>
+          <select class="form-select" id="s-theme">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Units</label>
+          <select class="form-select" id="s-units">
+            <option value="metric">Metric (°C, m/s)</option>
+            <option value="imperial">Imperial (°F, mph)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- API Key -->
+      <div class="dialog-section">
+        <div class="dialog-section-title">OpenWeatherMap API</div>
+        <div class="form-row">
+          <label class="form-label">API Key</label>
+          <input class="form-input" id="s-apikey" type="password" placeholder="Enter your API key…" autocomplete="off" spellcheck="false"/>
+        </div>
+        <div style="font-size:0.58rem;color:var(--text3);letter-spacing:0.06em;line-height:1.7;padding-left:100px;">
+          Free key at openweathermap.org — uses API 2.5 (free tier).
+          Each fetch = 2 requests per location (weather + forecast).
+        </div>
+      </div>
+
+      <!-- Locations -->
+      <div class="dialog-section">
+        <div class="dialog-section-title">Locations (max 4)</div>
+        <div class="search-row">
+          <input class="form-input" id="s-search" type="text" placeholder="Search city…" autocomplete="off" spellcheck="false"/>
+          <button class="btn-sm primary" id="s-search-btn">Search</button>
+        </div>
+        <div class="search-results" id="search-results"></div>
+        <div id="location-list"></div>
+      </div>
+
+      <!-- Import / Export -->
+      <div class="dialog-section">
+        <div class="dialog-section-title">Data</div>
+        <div class="ie-row">
+          <button class="btn-sm" id="s-export">↓ Export JSON</button>
+          <button class="btn-sm" id="s-import">↑ Import JSON</button>
+          <input type="file" id="s-import-file" accept=".json" style="display:none"/>
+        </div>
+      </div>
+
+    </div>
+    <div class="dialog-footer">
+      <button class="btn-sm" id="s-cancel">Cancel</button>
+      <button class="btn-sm primary" id="s-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="PantherUI.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   WORLDDASH — Application Logic
+═══════════════════════════════════════════════════════════════ */
+'use strict';
+
+// ── Constants ──────────────────────────────────────────────────
+const LS_KEY        = 'worlddash_v2';
+const MAX_LOCATIONS = 4;
+const CAROUSEL_IDS  = ['carousel-0','carousel-1','carousel-2','carousel-3'];
+const PANEL_LABELS  = ['CLOCK','WEATHER','HOURLY','DAILY','ALERTS'];
+
+// ── Default State ──────────────────────────────────────────────
+const DEFAULT_LOCATIONS = [
+  { name:'Toronto',   country:'CA', lat:43.7001,  lon:-79.4163,  tz:'America/Toronto'   },
+  { name:'Vancouver', country:'CA', lat:49.2497,  lon:-123.1193, tz:'America/Vancouver'  },
+  { name:'Calgary',   country:'CA', lat:51.0501,  lon:-114.0853, tz:'America/Edmonton'   },
+  { name:'Halifax',   country:'CA', lat:44.6488,  lon:-63.5752,  tz:'America/Halifax'    },
+];
+
+// ── App State ──────────────────────────────────────────────────
+let state = {
+  apiKey:     '',
+  units:      'metric',
+  theme:      'dark',
+  locations:  JSON.parse(JSON.stringify(DEFAULT_LOCATIONS)),
+  weather:    {},        // keyed by location index
+  lastFetch:  null,
+  nextFetch:  null,
+};
+
+// ── Clock ticker registry ──────────────────────────────────────
+const clockIntervals = {};
+
+// ══════════════════════════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════════════════════════
+function saveState() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state = Object.assign(state, saved);
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// STATUS BAR
+// ══════════════════════════════════════════════════════════════
+function setStatus(msg, type = '') {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = type;
+}
+
+function setBusy(on) {
+  document.getElementById('status-spinner').style.display = on ? 'inline-block' : 'none';
+}
+
+function updateTimestamps() {
+  const fmt = (d) => d ? new Date(d).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—';
+  document.getElementById('ts-updated').textContent = fmt(state.lastFetch);
+  document.getElementById('ts-next').textContent    = fmt(state.nextFetch);
+}
+
+// ══════════════════════════════════════════════════════════════
+// WEATHER ICONS (emoji map for OWM icon codes)
+// ══════════════════════════════════════════════════════════════
+const ICON_MAP = {
+  '01d':'☀️','01n':'🌙','02d':'⛅','02n':'🌥️',
+  '03d':'☁️','03n':'☁️','04d':'☁️','04n':'☁️',
+  '09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️',
+  '11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️',
+  '50d':'🌫️','50n':'🌫️',
+};
+
+function icon(code) { return ICON_MAP[code] || '🌡️'; }
+
+// ══════════════════════════════════════════════════════════════
+// UNIT HELPERS
+// ══════════════════════════════════════════════════════════════
+function tempUnit() { return state.units === 'metric' ? '°C' : '°F'; }
+function speedUnit() { return state.units === 'metric' ? 'm/s' : 'mph'; }
+function fmtTemp(t) { return t != null ? `${Math.round(t)}${tempUnit()}` : '—'; }
+function fmtWind(s, deg) {
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  const d = dirs[Math.round(deg/45)%8] || '';
+  return `${Math.round(s)} ${speedUnit()} ${d}`;
+}
+function fmtPop(p) { return p != null ? `${Math.round(p*100)}%` : '—'; }
+
+// ══════════════════════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════════════════════
+function fmtDate(d) {
+  return d.toLocaleDateString('en-CA', {weekday:'short',month:'short',day:'numeric',year:'numeric'});
+}
+
+function fmtTime(d) {
+  return d.toLocaleTimeString('en-CA', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+
+/**
+ * Return a Date object representing the current moment in a given IANA timezone.
+ * Uses Intl.DateTimeFormat parts to extract y/m/d/h/min/s in local time, then
+ * constructs a plain Date from those values — avoids the cross-browser
+ * "Invalid Date" error from passing toLocaleString() output into new Date().
+ */
+function localDate(tz) {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  });
+  const p = Object.fromEntries(fmt.formatToParts(now).map(({type, value}) => [type, value]));
+  const h = p.hour === '24' ? 0 : parseInt(p.hour, 10);  // hour12:false can yield "24" at midnight
+  return new Date(
+    parseInt(p.year,   10),
+    parseInt(p.month,  10) - 1,
+    parseInt(p.day,    10),
+    h,
+    parseInt(p.minute, 10),
+    parseInt(p.second, 10),
+  );
+}
+
+function getTZAbbr(tz) {
+  try {
+    const parts = new Intl.DateTimeFormat('en', {timeZone:tz, timeZoneName:'short'}).formatToParts(new Date());
+    return parts.find(p=>p.type==='timeZoneName')?.value || tz;
+  } catch { return tz; }
+}
+
+function getUTCOffset(tz) {
+  try {
+    // timeZoneName:'longOffset' gives "GMT-05:00" — reliable, no arithmetic needed
+    const parts = new Intl.DateTimeFormat('en', {timeZone:tz, timeZoneName:'longOffset'}).formatToParts(new Date());
+    const raw   = parts.find(p=>p.type==='timeZoneName')?.value || 'GMT+00:00';
+    return raw.replace('GMT', 'UTC');
+  } catch { return ''; }
+}
+
+function tickClock(idx) {
+  const loc = state.locations[idx];
+  if (!loc) return;
+  const el = document.getElementById(`clock-panel-${idx}`);
+  if (!el) return;
+  const local = localDate(loc.tz);
+  el.querySelector('.clock-time').textContent = fmtTime(local);
+  el.querySelector('.clock-date').textContent = fmtDate(local);
+}
+
+function startClock(idx) {
+  if (clockIntervals[idx]) clearInterval(clockIntervals[idx]);
+  tickClock(idx);
+  clockIntervals[idx] = setInterval(() => tickClock(idx), 1000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// PANEL HTML BUILDERS
+// ══════════════════════════════════════════════════════════════
+
+function buildClockPanel(idx) {
+  const loc   = state.locations[idx];
+  const tz    = loc.tz;
+  const local = localDate(tz);
+  return `
+    <div class="clock-panel" id="clock-panel-${idx}">
+      <div class="clock-city">${loc.name}</div>
+      <div class="clock-date">${fmtDate(local)}</div>
+      <div class="clock-time">${fmtTime(local)}</div>
+      <div class="clock-tz">${getTZAbbr(tz)}</div>
+      <div class="clock-offset">${getUTCOffset(tz)}</div>
+    </div>`;
+}
+
+function buildWeatherPanel(idx) {
+  const w = state.weather[idx];
+  if (!w || !state.apiKey) return buildPlaceholder(idx, 'current weather');
+  const c  = w.current;   // normalised from data/2.5/weather
+  const tz = state.locations[idx].tz;
+  return `
+    <div class="weather-panel">
+      <div class="weather-main">
+        <div class="weather-icon-lg">${icon(c.weather[0].icon)}</div>
+        <div class="weather-temp-block">
+          <div class="weather-temp">${fmtTemp(c.temp)}</div>
+          <div class="weather-feels">Feels like ${fmtTemp(c.feels_like)}</div>
+          <div class="weather-desc">${c.weather[0].description}</div>
+        </div>
+      </div>
+      <div class="weather-grid">
+        <div class="w-stat"><div class="w-stat-key">Humidity</div><div class="w-stat-val">${c.humidity}%</div></div>
+        <div class="w-stat"><div class="w-stat-key">Wind</div><div class="w-stat-val">${fmtWind(c.wind_speed, c.wind_deg)}</div></div>
+        <div class="w-stat"><div class="w-stat-key">Visibility</div><div class="w-stat-val">${c.visibility != null ? (c.visibility/1000).toFixed(1)+' km' : '—'}</div></div>
+        <div class="w-stat"><div class="w-stat-key">Clouds</div><div class="w-stat-val">${c.clouds ?? '—'}%</div></div>
+        <div class="w-stat"><div class="w-stat-key">Pressure</div><div class="w-stat-val">${c.pressure} hPa</div></div>
+        <div class="w-stat"><div class="w-stat-key">Humidity</div><div class="w-stat-val">${c.humidity}%</div></div>
+        <div class="w-stat"><div class="w-stat-key">Sunrise</div><div class="w-stat-val">${fmtUnixTime(c.sunrise, tz)}</div></div>
+        <div class="w-stat"><div class="w-stat-key">Sunset</div><div class="w-stat-val">${fmtUnixTime(c.sunset, tz)}</div></div>
+      </div>
+    </div>`;
+}
+
+function buildHourlyPanel(idx) {
+  const w = state.weather[idx];
+  if (!w || !state.apiKey) return buildPlaceholder(idx, 'hourly forecast');
+  const tz   = state.locations[idx].tz;
+  // 2.5/forecast gives 3-hour slots in w.hourly (normalised from list[])
+  const rows = (w.hourly || []).slice(0, 16).map(h => {
+    const t = new Date(h.dt * 1000).toLocaleTimeString('en-CA',
+      {timeZone:tz, hour:'2-digit', minute:'2-digit', hour12:true});
+    return `<div class="hourly-row">
+      <div class="hourly-time">${t}</div>
+      <div class="hourly-icon">${icon(h.weather[0].icon)}</div>
+      <div class="hourly-desc">${h.weather[0].description}</div>
+      <div class="hourly-temp">${fmtTemp(h.temp)}</div>
+      <div class="hourly-pop">${fmtPop(h.pop)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="hourly-panel">${rows}</div>`;
+}
+
+function buildDailyPanel(idx) {
+  const w = state.weather[idx];
+  if (!w || !state.apiKey) return buildPlaceholder(idx, 'daily forecast');
+  const tz    = state.locations[idx].tz;
+  const daily = w.daily || [];   // pre-aggregated in normaliseForecast()
+  const rows  = daily.slice(0, 6).map((d, i) => {
+    const dt  = new Date(d.dt * 1000);
+    const day = i === 0 ? 'Today'
+              : i === 1 ? 'Tomorrow'
+              : dt.toLocaleDateString('en-CA', {timeZone:tz, weekday:'short', month:'short', day:'numeric'});
+    return `<div class="daily-row">
+      <div class="daily-day${i===0?' today':''}">${day}</div>
+      <div class="daily-icon">${icon(d.weather[0].icon)}</div>
+      <div class="daily-desc">${d.weather[0].description}</div>
+      <div class="daily-hi">${fmtTemp(d.temp.max)}</div>
+      <div class="daily-lo">${fmtTemp(d.temp.min)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="daily-panel">${rows}</div>`;
+}
+
+function buildAlertsPanel(idx) {
+  if (!state.apiKey) return buildPlaceholder(idx, 'weather alerts');
+  // Weather alerts are not available in the free 2.5 API tier.
+  // Shown here as a placeholder — upgrade to One Call 3.0 for alert support.
+  return `<div class="alerts-panel">
+    <div class="no-alerts">
+      <div class="no-alerts-icon">ℹ️</div>
+      <div class="no-alerts-text" style="line-height:2;">
+        Alerts not available<br>in API 2.5 free tier.<br>
+        <span style="color:var(--text3);font-size:0.55rem;">Requires One Call API 3.0.</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildPlaceholder(idx, what) {
+  return `<div class="placeholder-panel">
+    <div class="placeholder-icon">🌐</div>
+    <div class="placeholder-text">No ${what} data<br>Configure your API key<br>then press Fetch</div>
+    <div class="placeholder-action" onclick="openSettings()">Open Settings</div>
+  </div>`;
+}
+
+function fmtUnixTime(unix, tz) {
+  if (!unix) return '—';
+  return new Date(unix*1000).toLocaleTimeString('en-CA', {timeZone:tz, hour:'2-digit', minute:'2-digit', hour12:true});
+}
+
+// ══════════════════════════════════════════════════════════════
+// CAROUSEL SETUP
+// ══════════════════════════════════════════════════════════════
+function buildFigure(titleSuffix, contentHTML) {
+  const fig = document.createElement('figure');
+  fig.innerHTML = `
+    <div class="panther-Carousel-panelTitleBar">
+      <span class="panther-Carousel-panelTitle">${titleSuffix}</span>
+    </div>
+    <div class="panther-Carousel-panelContent">${contentHTML}</div>`;
+  return fig;
+}
+
+function buildCarousels() {
+  CAROUSEL_IDS.forEach((cid, idx) => {
+    const el = document.getElementById(cid);
+    el.innerHTML = '';
+
+    // 5 panels per carousel
+    const panels = [
+      buildClockPanel(idx),
+      buildWeatherPanel(idx),
+      buildHourlyPanel(idx),
+      buildDailyPanel(idx),
+      buildAlertsPanel(idx),
+    ];
+
+    panels.forEach((html, pi) => {
+      const loc  = state.locations[idx];
+      const title= `${loc.name.toUpperCase()} · ${PANEL_LABELS[pi]}`;
+      el.appendChild(buildFigure(title, html));
+    });
+
+    // Init or refresh
+    if (Panther.Carousel.all[cid]) {
+      Panther.Carousel.refresh();
+    } else {
+      Panther.Carousel.init({
+        id: cid,
+        backgroundColor: 'var(--panel-bg)',
+        easing: 'easeInOutCubic',
+        callback(c) {
+          updateDots(idx, c.sideIndex % c.panelCount);
+        },
+      });
+    }
+
+    buildDots(idx);
+    startClock(idx);
+  });
+}
+
+function refreshPanel(idx, side) {
+  // side: 0-based
+  const cid = CAROUSEL_IDS[idx];
+  const c   = Panther.Carousel.all[cid];
+  if (!c) return;
+  const fig     = c.element.children[side];
+  if (!fig) return;
+  const content = fig.querySelector('.panther-Carousel-panelContent');
+  if (!content) return;
+
+  let html = '';
+  if (side === 0) { html = buildClockPanel(idx);    startClock(idx); }
+  if (side === 1) { html = buildWeatherPanel(idx);  }
+  if (side === 2) { html = buildHourlyPanel(idx);   }
+  if (side === 3) { html = buildDailyPanel(idx);    }
+  if (side === 4) { html = buildAlertsPanel(idx);   }
+
+  content.innerHTML = html;
+  // Update title
+  const loc   = state.locations[idx];
+  const title = fig.querySelector('.panther-Carousel-panelTitle');
+  if (title) title.textContent = `${loc.name.toUpperCase()} · ${PANEL_LABELS[side]}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// DOT INDICATORS
+// ══════════════════════════════════════════════════════════════
+function buildDots(idx) {
+  const box = document.getElementById(`indicator-${idx}`);
+  if (!box) return;
+  box.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    box.appendChild(d);
+  }
+}
+
+function updateDots(idx, active) {
+  const dots = document.querySelectorAll(`#indicator-${idx} .dot`);
+  const ai   = Math.round(active) % dots.length;
+  dots.forEach((d, i) => d.classList.toggle('active', i === ai));
+}
+
+// ══════════════════════════════════════════════════════════════
+// WEATHER API — data/2.5 (free tier)
+// 2 requests per location:
+//   1. /weather  → current conditions
+//   2. /forecast → 3-hour slots for next 5 days (hourly + daily)
+// Total: 8 requests for 4 locations.
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Aggregate 3-hour forecast slots into per-day summaries.
+ * Groups by local calendar date, picks the modal weather icon,
+ * and tracks min/max temps across the day's slots.
+ */
+function normaliseForecast(list, tz) {
+  const byDay = {};
+  for (const slot of list) {
+    const dateKey = new Date(slot.dt * 1000)
+      .toLocaleDateString('en-CA', {timeZone: tz});   // "2026-02-24"
+    if (!byDay[dateKey]) {
+      byDay[dateKey] = { dt: slot.dt, slots: [], weather: slot.weather };
+    }
+    byDay[dateKey].slots.push(slot);
+  }
+
+  return Object.values(byDay).map(day => {
+    const temps = day.slots.map(s => s.main.temp);
+    // Pick the weather from the noon-ish slot if available, else first
+    const noon  = day.slots.find(s => {
+      const h = new Date(s.dt * 1000).getHours();
+      return h >= 11 && h <= 14;
+    }) || day.slots[0];
+    return {
+      dt:      day.dt,
+      weather: noon.weather,
+      temp: {
+        min: Math.min(...temps),
+        max: Math.max(...temps),
+      },
+    };
+  });
+}
+
+async function fetchWeather() {
+  if (!state.apiKey) { setStatus('No API key — open Settings to add one.', 'err'); return; }
+  setBusy(true);
+  setStatus('Fetching weather data…');
+  let ok = 0, fail = 0;
+
+  for (let idx = 0; idx < state.locations.length; idx++) {
+    const loc    = state.locations[idx];
+    const base   = `https://api.openweathermap.org/data/2.5`;
+    const params = `lat=${loc.lat}&lon=${loc.lon}&units=${state.units}&appid=${state.apiKey}`;
+
+    try {
+      setStatus(`Fetching ${loc.name}… (${idx+1}/${state.locations.length})`);
+
+      // Both requests fire in parallel for this location
+      const [wRes, fRes] = await Promise.all([
+        fetch(`${base}/weather?${params}`),
+        fetch(`${base}/forecast?${params}`),
+      ]);
+
+      if (!wRes.ok) throw new Error(`weather: ${await wRes.text()}`);
+      if (!fRes.ok) throw new Error(`forecast: ${await fRes.text()}`);
+
+      const wData = await wRes.json();
+      const fData = await fRes.json();
+
+      // Normalise into the shape our panel builders expect
+      state.weather[idx] = {
+        // current — map 2.5/weather fields to internal shape
+        current: {
+          temp:       wData.main.temp,
+          feels_like: wData.main.feels_like,
+          humidity:   wData.main.humidity,
+          pressure:   wData.main.pressure,
+          visibility: wData.visibility,
+          clouds:     wData.clouds?.all,
+          wind_speed: wData.wind?.speed,
+          wind_deg:   wData.wind?.deg,
+          sunrise:    wData.sys?.sunrise,
+          sunset:     wData.sys?.sunset,
+          weather:    wData.weather,
+        },
+        // hourly — 3-hour slots, normalise temp from main.temp
+        hourly: fData.list.map(s => ({
+          dt:      s.dt,
+          temp:    s.main.temp,
+          pop:     s.pop,
+          weather: s.weather,
+        })),
+        // daily — aggregated from the 3-hour slots
+        daily: normaliseForecast(fData.list, loc.tz),
+      };
+
+      // Refresh panels 1–4 (weather, hourly, daily, alerts)
+      for (let s = 1; s <= 4; s++) refreshPanel(idx, s);
+      ok++;
+    } catch(e) {
+      console.error('Fetch failed for', loc.name, e);
+      fail++;
+    }
+  }
+
+  state.lastFetch = Date.now();
+  state.nextFetch = Date.now() + 10 * 60 * 1000;
+  saveState();
+  updateTimestamps();
+  setBusy(false);
+
+  if (fail === 0) setStatus(`Data updated for ${ok} location${ok>1?'s':''}.`, 'ok');
+  else setStatus(`Updated ${ok}, failed ${fail}. Check API key or quota.`, 'err');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOOLBAR HANDLERS
+// ══════════════════════════════════════════════════════════════
+document.getElementById('btn-fetch').addEventListener('click', fetchWeather);
+
+[1,2,3,4,5].forEach(n => {
+  document.getElementById(`btn-s${n}`).addEventListener('click', () => {
+    CAROUSEL_IDS.forEach(cid => Panther.Carousel.turnTo(cid, n));
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// SETTINGS DIALOG
+// ══════════════════════════════════════════════════════════════
+function openSettings() {
+  // Populate fields
+  document.getElementById('s-apikey').value  = state.apiKey;
+  document.getElementById('s-units').value   = state.units;
+  document.getElementById('s-theme').value   = state.theme;
+  renderLocationList();
+  document.getElementById('settings-overlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+
+document.getElementById('btn-settings').addEventListener('click', openSettings);
+document.getElementById('settings-close').addEventListener('click', closeSettings);
+document.getElementById('s-cancel').addEventListener('click', closeSettings);
+document.getElementById('settings-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('settings-overlay')) closeSettings();
+});
+
+document.getElementById('s-save').addEventListener('click', () => {
+  const newKey   = document.getElementById('s-apikey').value.trim();
+  const newUnits = document.getElementById('s-units').value;
+  const newTheme = document.getElementById('s-theme').value;
+
+  const unitsChanged = newUnits !== state.units;
+  state.apiKey  = newKey;
+  state.units   = newUnits;
+  state.theme   = newTheme;
+
+  // If units changed, clear cached data so it re-fetches in correct units
+  if (unitsChanged) state.weather = {};
+
+  applyTheme();
+  saveState();
+  closeSettings();
+  buildCarousels();
+  setStatus('Settings saved.', 'ok');
+});
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', state.theme);
+}
+
+// ── Location Search ────────────────────────────────────────────
+document.getElementById('s-search-btn').addEventListener('click', searchLocations);
+document.getElementById('s-search').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchLocations();
+});
+
+async function searchLocations() {
+  const q = document.getElementById('s-search').value.trim();
+  if (!q) return;
+  const resultsEl = document.getElementById('search-results');
+  resultsEl.innerHTML = '<div class="search-result-item">Searching…</div>';
+  resultsEl.classList.add('open');
+
+  // OWM Geocoding API — free tier, no key needed for basic geo
+  const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q)}&limit=5&appid=${state.apiKey||'demo'}`;
+  try {
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!data.length) {
+      resultsEl.innerHTML = '<div class="search-result-item">No results found.</div>';
+      return;
+    }
+    resultsEl.innerHTML = data.map((r,i) => {
+      const label = [r.name, r.state, r.country].filter(Boolean).join(', ');
+      const tz    = guessTimezone(r.country, r.state, r.name, r.lon);
+      return `<div class="search-result-item" data-idx="${i}"
+        data-name="${r.name}" data-country="${r.country||''}"
+        data-lat="${r.lat}" data-lon="${r.lon}" data-tz="${tz}"
+        onclick="addLocation(this)">
+        ${label}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    resultsEl.innerHTML = '<div class="search-result-item">Search failed. Check API key.</div>';
+  }
+}
+
+function guessTimezone(country, state_, city, lon) {
+  // Best-effort TZ from country/state; can be overridden in future
+  const map = {
+    'CA': {
+      'British Columbia':'America/Vancouver', 'Alberta':'America/Edmonton',
+      'Saskatchewan':'America/Regina', 'Manitoba':'America/Winnipeg',
+      'Ontario':'America/Toronto', 'Quebec':'America/Montreal',
+      'New Brunswick':'America/Moncton', 'Nova Scotia':'America/Halifax',
+      'Prince Edward Island':'America/Halifax', 'Newfoundland':'America/St_Johns',
+      'Yukon':'America/Whitehorse', 'Northwest Territories':'America/Yellowknife',
+      'Nunavut':'America/Iqaluit',
+    },
+    'US': {
+      'California':'America/Los_Angeles', 'Oregon':'America/Los_Angeles',
+      'Washington':'America/Los_Angeles', 'Nevada':'America/Los_Angeles',
+      'Arizona':'America/Phoenix', 'Colorado':'America/Denver',
+      'Utah':'America/Denver', 'New Mexico':'America/Denver',
+      'Texas':'America/Chicago', 'Illinois':'America/Chicago',
+      'Florida':'America/New_York', 'New York':'America/New_York',
+      'Massachusetts':'America/New_York',
+    },
+    'GB': { _default:'Europe/London' },
+    'AU': {
+      'New South Wales':'Australia/Sydney','Victoria':'Australia/Melbourne',
+      'Queensland':'Australia/Brisbane','Western Australia':'Australia/Perth',
+      'South Australia':'Australia/Adelaide',
+    },
+  };
+  const regions = map[country];
+  if (regions) {
+    if (regions[state_]) return regions[state_];
+    if (regions._default) return regions._default;
+  }
+  // Rough offset from longitude
+  const offset = Math.round(lon / 15);
+  if (offset >= -12 && offset <= 14) {
+    return `Etc/GMT${offset <= 0 ? '+'+Math.abs(offset) : '-'+offset}`;
+  }
+  return 'UTC';
+}
+
+function addLocation(el) {
+  if (state.locations.length >= MAX_LOCATIONS) {
+    alert(`Maximum ${MAX_LOCATIONS} locations allowed.`); return;
+  }
+  const loc = {
+    name:    el.dataset.name,
+    country: el.dataset.country,
+    lat:     parseFloat(el.dataset.lat),
+    lon:     parseFloat(el.dataset.lon),
+    tz:      el.dataset.tz,
+  };
+  state.locations.push(loc);
+  document.getElementById('search-results').classList.remove('open');
+  document.getElementById('s-search').value = '';
+  renderLocationList();
+}
+
+// ── Location List ──────────────────────────────────────────────
+function renderLocationList() {
+  const list = document.getElementById('location-list');
+  list.innerHTML = state.locations.map((loc, i) => `
+    <div class="loc-item" draggable="true" data-idx="${i}"
+         ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})"
+         ondrop="dragDrop(event,${i})" ondragleave="dragLeave(event)">
+      <span class="loc-handle">⠿</span>
+      <div style="flex:1">
+        <div class="loc-name">${loc.name}</div>
+        <div class="loc-country">${[loc.country, loc.tz].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div class="loc-actions">
+        <button class="loc-btn del" onclick="removeLocation(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function removeLocation(idx) {
+  if (state.locations.length <= 1) { alert('At least 1 location required.'); return; }
+  state.locations.splice(idx, 1);
+  renderLocationList();
+}
+
+// ── Drag & drop reorder ────────────────────────────────────────
+let dragSrc = null;
+
+function dragStart(e, idx) { dragSrc = idx; e.dataTransfer.effectAllowed = 'move'; }
+
+function dragOver(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('.loc-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+
+function dragDrop(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('.loc-item').forEach(el => el.classList.remove('drag-over'));
+  if (dragSrc === null || dragSrc === idx) return;
+  const moved = state.locations.splice(dragSrc, 1)[0];
+  state.locations.splice(idx, 0, moved);
+  dragSrc = null;
+  renderLocationList();
+}
+
+// ── Export / Import ────────────────────────────────────────────
+document.getElementById('s-export').addEventListener('click', () => {
+  const data = JSON.stringify({
+    exported: new Date().toISOString(),
+    state: state,
+  }, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `worlddash-export-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  setStatus('Data exported.', 'ok');
+});
+
+document.getElementById('s-import').addEventListener('click', () => {
+  document.getElementById('s-import-file').click();
+});
+
+document.getElementById('s-import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      const imported = parsed.state || parsed;
+      if (imported.locations) state.locations = imported.locations.slice(0, MAX_LOCATIONS);
+      if (imported.apiKey  !== undefined) state.apiKey  = imported.apiKey;
+      if (imported.units   !== undefined) state.units   = imported.units;
+      if (imported.theme   !== undefined) state.theme   = imported.theme;
+      if (imported.weather !== undefined) state.weather = imported.weather;
+      applyTheme();
+      saveState();
+      renderLocationList();
+      document.getElementById('s-apikey').value = state.apiKey;
+      document.getElementById('s-units').value  = state.units;
+      document.getElementById('s-theme').value  = state.theme;
+      setStatus('Data imported successfully.', 'ok');
+    } catch(err) {
+      setStatus('Import failed: invalid JSON.', 'err');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// ══════════════════════════════════════════════════════════════
+// RESIZE — rebuild carousel geometry
+// ══════════════════════════════════════════════════════════════
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    Panther.Carousel.refresh();
+    // Rebuild dots in case orientation changed
+    CAROUSEL_IDS.forEach((_, idx) => buildDots(idx));
+  }, 300);
+});
+
+// ══════════════════════════════════════════════════════════════
+// PWA SERVICE WORKER
+// ══════════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  // Inline SW registration — SW is minimal, just serves cache
+  // Users can add a sw.js manually for full offline support
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+loadState();
+applyTheme();
+buildCarousels();
+updateTimestamps();
+setStatus('WorldDash ready' + (state.apiKey ? '' : ' — add API key in Settings'), state.apiKey ? 'ok' : '');
+
+// Auto-fetch if we have a key and no recent data
+if (state.apiKey && (!state.lastFetch || Date.now() - state.lastFetch > 10 * 60 * 1000)) {
+  setTimeout(fetchWeather, 1200);
+}
+</script>
+</body>
+</html>

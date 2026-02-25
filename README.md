@@ -11,6 +11,10 @@ Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-
 - [Full Demo](demo.html)
 - [Basic Demo](demo-basic.html)
 
+### Applications
+
+- [WorldDash](worlddash.html) - displays world clock and weather data for 4 locations
+
 ---
 
 ## Files
