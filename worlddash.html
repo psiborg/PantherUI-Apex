@@ -1048,32 +1048,14 @@ html, body {
 
   .tb-sep { margin: 0 1px; }
 
-  /* Stage: single-page horizontal scroll — each cell = 100% width */
-  #stage { overflow-x: auto; overflow-y: hidden; }
-
+  /* Portrait mobile: 2 carousels stacked vertically */
   #grid {
-    position: relative;        /* override absolute */
-    width: 400%;               /* 4 cells × 100% */
-    height: 100%;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr;   /* single row, scroll horizontally */
-    overflow: visible;
-    scroll-snap-type: none;    /* JS handles this — PantherUI cells */
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
   }
 
-  /* Re-enable scroll snap on the stage itself */
-  #stage {
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-  }
-
-  .cell {
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    width: 100vw;              /* each cell is exactly viewport width */
-    height: 100%;
-    min-width: 100vw;
-  }
+  /* Only show first 2 carousels on mobile */
+  #cell-2, #cell-3 { display: none; }
 
   /* Panel title bar — a little more breathing room */
   .panther-Carousel-panelTitleBar {
@@ -1162,9 +1144,17 @@ html, body {
   }
   .dot { width: 7px; height: 7px; }
 
-  /* City nav strip: show which carousel is active */
+  /* City nav strip: hidden on mobile (no longer needed) */
   #city-nav {
-    display: flex;
+    display: none !important;
+  }
+}
+
+/* ── Mobile landscape: 2 carousels side by side ─────────── */
+@media (max-width: 600px) and (orientation: landscape) {
+  #grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
   }
 }
 
@@ -1344,9 +1334,7 @@ html, body {
   </header>
 
   <!-- ── City nav strip (portrait phone only) ─────── -->
-  <div id="city-nav">
-    <!-- Items injected by buildCityNav() -->
-  </div>
+  <div id="city-nav"></div>
 
   <!-- ── STAGE ──────────────────────────────────────── -->
   <main id="stage">
@@ -1812,12 +1800,11 @@ function buildFigure(titleSuffix, contentHTML) {
   return fig;
 }
 
-function buildCarousels() {
+/** Insert panel HTML into DOM. Does NOT init PantherUI. */
+function buildPanelHTML() {
   CAROUSEL_IDS.forEach((cid, idx) => {
     const el = document.getElementById(cid);
     el.innerHTML = '';
-
-    // 5 panels per carousel
     const panels = [
       buildClockPanel(idx),
       buildWeatherPanel(idx),
@@ -1825,14 +1812,18 @@ function buildCarousels() {
       buildDailyPanel(idx),
       buildAlertsPanel(idx),
     ];
-
     panels.forEach((html, pi) => {
-      const loc  = state.locations[idx];
-      const title= `${loc.name.toUpperCase()} · ${PANEL_LABELS[pi]}`;
+      const loc   = state.locations[idx];
+      const title = `${loc.name.toUpperCase()} · ${PANEL_LABELS[pi]}`;
       el.appendChild(buildFigure(title, html));
     });
+  });
+}
 
-    // Init or refresh
+/** Init or refresh PantherUI on every carousel. Reads offsetWidth — must
+ *  be called after layout is complete. */
+function initCarousels() {
+  CAROUSEL_IDS.forEach((cid, idx) => {
     if (Panther.Carousel.all[cid]) {
       Panther.Carousel.refresh();
     } else {
@@ -1845,10 +1836,29 @@ function buildCarousels() {
         },
       });
     }
-
     buildDots(idx);
     startClock(idx);
   });
+}
+
+/** Full rebuild: panel HTML + PantherUI init, deferred to post-layout. */
+function buildCarouselsDeferred() {
+  buildPanelHTML();
+  // Double rAF: first frame lets the browser apply CSS and compute layout,
+  // second frame ensures all box sizes are finalised before PantherUI reads
+  // offsetWidth in modify().
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      initCarousels();
+    });
+  });
+}
+
+/** Synchronous rebuild used when we know layout is already stable
+ *  (e.g. after settings save or weather fetch). */
+function buildCarousels() {
+  buildPanelHTML();
+  initCarousels();
 }
 
 function refreshPanel(idx, side) {
@@ -2287,7 +2297,6 @@ window.addEventListener('resize', () => {
     Panther.Carousel.refresh();
     // Rebuild dots in case orientation changed
     CAROUSEL_IDS.forEach((_, idx) => buildDots(idx));
-    updateLayoutForMobile();
   }, 300);
 });
 
@@ -2304,106 +2313,16 @@ if ('serviceWorker' in navigator) {
 // MOBILE — City nav strip & scroll-snap city switching
 // ══════════════════════════════════════════════════════════════
 
-/**
- * Returns true when we're in the horizontal scroll-snap mobile layout
- * (portrait phones ≤ 600px wide).
- */
-function isMobileScroll() {
-  return window.innerWidth <= 600;
-}
-
-/**
- * Build (or rebuild) the city-nav tab strip shown on portrait phones.
- * Each tab scrolls the stage to that city's cell.
- */
-function buildCityNav() {
-  const nav = document.getElementById('city-nav');
-  if (!nav) return;
-  nav.innerHTML = state.locations.map((loc, i) => `
-    <div class="city-nav-item${i === 0 ? ' active' : ''}" data-idx="${i}"
-         onclick="scrollToCity(${i})">${loc.name}</div>
-  `).join('');
-}
-
-/**
- * Scroll the stage to a specific city cell (portrait phone mode only).
- */
-function scrollToCity(idx) {
-  const stage = document.getElementById('stage');
-  const cell  = document.getElementById(`cell-${idx}`);
-  if (!stage || !cell) return;
-  stage.scrollTo({ left: cell.offsetLeft, behavior: 'smooth' });
-}
-
-/**
- * Update the active tab in the city-nav strip based on current scroll position.
- */
-function updateCityNav(idx) {
-  document.querySelectorAll('.city-nav-item').forEach((el, i) => {
-    el.classList.toggle('active', i === idx);
-  });
-}
-
-/**
- * Snap detection: fire when scroll settles on a city cell.
- * Uses IntersectionObserver for efficiency — no scroll event polling.
- */
-function initScrollObserver() {
-  if (!('IntersectionObserver' in window)) return;
-
-  const stage = document.getElementById('stage');
-  if (!stage) return;
-
-  const cells = Array.from(document.querySelectorAll('.cell'));
-
-  const observer = new IntersectionObserver((entries) => {
-    if (!isMobileScroll()) return;
-    entries.forEach(entry => {
-      if (entry.intersectionRatio >= 0.6) {
-        const idx = parseInt(entry.target.id.split('-')[1], 10);
-        updateCityNav(idx);
-      }
-    });
-  }, {
-    root:      stage,
-    threshold: 0.6,
-  });
-
-  cells.forEach(cell => observer.observe(cell));
-}
-
-/**
- * Adjust the stage top offset on mobile to account for the city-nav strip.
- * The city-nav is 28px tall and sits between the header and the stage,
- * but since #city-nav is a sibling of #stage in the grid, the grid
- * row sizing handles this automatically. However, we need to ensure
- * the #app grid updates when city-nav becomes visible.
- */
-function updateLayoutForMobile() {
-  const isMobile = isMobileScroll();
-  const cityNav  = document.getElementById('city-nav');
-  const app      = document.getElementById('app');
-
-  if (cityNav) {
-    cityNav.style.display = isMobile ? 'flex' : 'none';
-  }
-
-  if (app) {
-    app.style.gridTemplateRows = isMobile
-      ? 'var(--header-h) 28px 1fr var(--footer-h)'
-      : 'var(--header-h) 1fr var(--footer-h)';
-  }
-}
-
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 loadState();
 applyTheme();
-buildCarousels();
-buildCityNav();
-updateLayoutForMobile();
-initScrollObserver();
+
+// Build panel HTML and insert into DOM, but defer PantherUI.init()
+// until after the browser has completed its first layout pass.
+// This ensures offsetWidth is non-zero when modify() is called.
+buildCarouselsDeferred();
 updateTimestamps();
 setStatus('WorldDash ready' + (state.apiKey ? '' : ' — add API key in Settings'), state.apiKey ? 'ok' : '');
 
