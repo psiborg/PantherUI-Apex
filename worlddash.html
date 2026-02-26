@@ -957,6 +957,328 @@ html, body {
 .cell:nth-child(2) { animation-delay: 0.12s; }
 .cell:nth-child(3) { animation-delay: 0.19s; }
 .cell:nth-child(4) { animation-delay: 0.26s; }
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE — iOS & Android phone support
+   Strategy:
+   - Phones ≤ 600px wide: single-carousel-at-a-time swipe
+     view. The grid scrolls horizontally as pages rather
+     than stacking 4 tiny cells vertically.
+   - Header collapses: logo-text hidden, buttons icon-only,
+     panel numbers in a bottom tab bar.
+   - Footer simplified: timestamps hidden on very small screens.
+   - Touch targets enlarged to 44px minimum.
+   - Safe areas respected via env() for notch/home-bar.
+   - Dialog goes full-screen.
+═══════════════════════════════════════════════════════ */
+
+/* ── Safe area baseline (all screen sizes) ───────────── */
+#app {
+  padding-top:    env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left:   env(safe-area-inset-left, 0px);
+  padding-right:  env(safe-area-inset-right, 0px);
+}
+
+/* Touch: remove hover flicker, improve tap response */
+@media (hover: none) {
+  .tb-btn:hover,
+  .btn-sm:hover,
+  .loc-btn:hover,
+  .hourly-row:hover,
+  .daily-row:hover,
+  .search-result-item:hover,
+  .loc-item:hover { background: unset; color: unset; border-color: unset; }
+
+  .tb-btn:active     { background: var(--amber); border-color: var(--amber); color: #000; }
+  .btn-sm:active     { background: var(--border); color: var(--text); }
+  .loc-btn:active    { color: var(--text); border-color: var(--text3); }
+  .loc-btn.del:active { color: var(--red); border-color: var(--red); }
+  .hourly-row:active { background: rgba(30,45,61,0.3); }
+  .daily-row:active  { background: rgba(30,45,61,0.3); }
+  .search-result-item:active { background: var(--surface); color: var(--text); }
+  .loc-item:active   { background: var(--surface); }
+
+  /* Momentum scroll on panels */
+  .hourly-panel,
+  .daily-panel,
+  .alerts-panel,
+  .weather-panel { -webkit-overflow-scrolling: touch; }
+}
+
+/* ── Small phones: ≤ 600px ───────────────────────────── */
+@media (max-width: 600px) {
+
+  /* Shrink header height slightly */
+  :root {
+    --header-h: 48px;
+    --footer-h: 32px;
+  }
+
+  /* Header layout: tighter */
+  #header {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  /* Hide logo text — keep mark only */
+  .logo-text { display: none; }
+
+  .logo-mark { width: 26px; height: 26px; }
+
+  /* Toolbar: shrink buttons, tighter gaps */
+  #toolbar { gap: 3px; }
+
+  .tb-btn {
+    font-size: 0.6rem;
+    padding: 7px 7px;
+    letter-spacing: 0;
+    min-height: 34px;
+    min-width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Shorten button labels */
+  #btn-fetch  { font-size: 0; width: 34px; }          /* icon only */
+  #btn-fetch::before { content: '⟳'; font-size: 1rem; }
+  #btn-settings { font-size: 0; width: 34px; }
+  #btn-settings::before { content: '⚙'; font-size: 1rem; }
+
+  .tb-sep { margin: 0 1px; }
+
+  /* Stage: single-page horizontal scroll — each cell = 100% width */
+  #stage { overflow-x: auto; overflow-y: hidden; }
+
+  #grid {
+    position: relative;        /* override absolute */
+    width: 400%;               /* 4 cells × 100% */
+    height: 100%;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;   /* single row, scroll horizontally */
+    overflow: visible;
+    scroll-snap-type: none;    /* JS handles this — PantherUI cells */
+  }
+
+  /* Re-enable scroll snap on the stage itself */
+  #stage {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+  }
+
+  .cell {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    width: 100vw;              /* each cell is exactly viewport width */
+    height: 100%;
+    min-width: 100vw;
+  }
+
+  /* Panel title bar — a little more breathing room */
+  .panther-Carousel-panelTitleBar {
+    height: 26px !important;
+    min-height: 26px !important;
+    font-size: 0.58rem !important;
+  }
+
+  .panther-Carousel-panelContent {
+    height: calc(100% - 26px);
+  }
+
+  /* Clock — more compact vertical layout */
+  .clock-panel { gap: 2px; padding: 10px 12px; }
+  .clock-city  { font-size: clamp(1.2rem, 6vw, 1.6rem); }
+  .clock-date  { font-size: clamp(0.58rem, 2vw, 0.7rem); margin-top: 2px; }
+  .clock-time  { font-size: clamp(1.6rem, 8vw, 2.6rem); margin: 3px 0; }
+  .clock-tz    { font-size: 0.58rem; }
+  .clock-offset { font-size: 0.55rem; }
+
+  /* Weather panel — tighter */
+  .weather-panel { padding: 8px 10px; gap: 6px; }
+  .weather-icon-lg { font-size: 1.8rem; }
+  .weather-temp    { font-size: clamp(1.3rem, 6vw, 1.9rem); }
+  .weather-grid    { grid-template-columns: 1fr 1fr; gap: 3px 6px; }
+  .w-stat-key      { font-size: 0.48rem; }
+  .w-stat-val      { font-size: 0.65rem; }
+
+  /* Hourly rows — taller tap targets, simpler columns */
+  .hourly-row {
+    grid-template-columns: 48px 24px 1fr 40px;
+    padding: 8px 10px;
+    gap: 4px;
+    min-height: 44px;
+  }
+  /* Hide precipitation column on very narrow screens */
+  .hourly-pop { display: none; }
+  .hourly-time { font-size: 0.6rem; }
+  .hourly-desc { font-size: 0.58rem; }
+  .hourly-temp { font-size: 0.65rem; }
+
+  /* Daily rows */
+  .daily-row {
+    grid-template-columns: 52px 24px 1fr 34px 34px;
+    padding: 8px 10px;
+    gap: 4px;
+    min-height: 44px;
+  }
+  .daily-day  { font-size: 0.6rem; }
+  .daily-desc { font-size: 0.55rem; }
+  .daily-hi, .daily-lo { font-size: 0.65rem; }
+
+  /* Placeholders */
+  .placeholder-icon { font-size: 1.5rem; }
+  .placeholder-text { font-size: 0.58rem; }
+  .placeholder-action { padding: 8px 14px; font-size: 0.58rem; }
+
+  /* Footer: hide timestamps, just show status */
+  .footer-timestamps { display: none; }
+  #footer { padding: 0 10px; }
+  #status-msg { font-size: 0.58rem; }
+
+  /* Dialog: full screen on phones */
+  .dialog {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .dialog-overlay { align-items: flex-end; }
+
+  .dialog-body { padding: 12px 16px; gap: 16px; }
+
+  .form-row { flex-direction: column; align-items: flex-start; gap: 5px; }
+  .form-label { flex: none; }
+  .form-select, .form-input { width: 100%; }
+
+  .ie-row { flex-direction: column; }
+  .btn-sm { min-height: 44px; font-size: 0.65rem; }
+
+  /* Dots: bigger tap targets */
+  #indicator-0, #indicator-1, #indicator-2, #indicator-3 {
+    bottom: 8px;
+  }
+  .dot { width: 7px; height: 7px; }
+
+  /* City nav strip: show which carousel is active */
+  #city-nav {
+    display: flex;
+  }
+}
+
+/* ── Medium phones / small tablets in portrait: 601–768px ─ */
+@media (min-width: 601px) and (max-width: 768px) and (orientation: portrait) {
+  :root { --header-h: 50px; }
+
+  .logo-text { font-size: 0.95rem; }
+
+  .tb-btn {
+    font-size: 0.62rem;
+    padding: 6px 8px;
+    min-height: 38px;
+  }
+
+  /* 2×2 grid even in portrait at this size — cells are big enough */
+  #grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  .clock-city { font-size: clamp(1rem, 3vw, 1.4rem); }
+  .clock-time { font-size: clamp(1.2rem, 4vw, 2rem); }
+
+  .hourly-row { min-height: 40px; }
+  .daily-row  { min-height: 40px; }
+}
+
+/* ── Landscape phone (e.g. iPhone rotated): h ≤ 430px ─── */
+@media (orientation: landscape) and (max-height: 430px) {
+  :root {
+    --header-h: 40px;
+    --footer-h: 28px;
+  }
+
+  .logo-mark  { width: 22px; height: 22px; }
+  .logo-text  { font-size: 0.85rem; }
+
+  .tb-btn {
+    padding: 4px 7px;
+    font-size: 0.6rem;
+    min-height: 30px;
+  }
+
+  /* Keep 2×2 but reduce panel chrome */
+  .panther-Carousel-panelTitleBar {
+    height: 22px !important;
+    min-height: 22px !important;
+    font-size: 0.52rem !important;
+  }
+
+  .panther-Carousel-panelContent { height: calc(100% - 22px); }
+
+  .clock-panel { gap: 1px; padding: 6px 10px; }
+  .clock-city  { font-size: clamp(0.9rem, 3vw, 1.2rem); }
+  .clock-date  { font-size: 0.55rem; margin-top: 1px; }
+  .clock-time  { font-size: clamp(1rem, 4vw, 1.6rem); margin: 2px 0; }
+  .clock-tz, .clock-offset { font-size: 0.5rem; }
+
+  .weather-panel   { padding: 5px 8px; gap: 4px; }
+  .weather-icon-lg { font-size: 1.4rem; }
+  .weather-temp    { font-size: clamp(1rem, 3vw, 1.4rem); }
+  .w-stat-key { font-size: 0.44rem; }
+  .w-stat-val { font-size: 0.6rem; }
+
+  .hourly-row { padding: 4px 8px; }
+  .daily-row  { padding: 4px 8px; }
+
+  .footer-timestamps { display: none; }
+  #status-msg { font-size: 0.55rem; }
+
+  .dialog { max-height: 95vh; border-radius: 8px; }
+}
+
+/* ── City nav indicator strip (portrait phone only) ────── */
+/* A horizontal strip below the header showing which city
+   carousel is currently scrolled into view. */
+#city-nav {
+  display: none;              /* hidden by default; shown at ≤600px */
+  position: absolute;
+  top: var(--header-h);
+  left: 0; right: 0;
+  height: 28px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  z-index: 90;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.city-nav-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  border-right: 1px solid var(--border);
+  height: 100%;
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+
+.city-nav-item:last-child { border-right: none; }
+.city-nav-item.active { color: var(--teal); background: rgba(30,200,160,0.06); }
+
 </style>
 </head>
 <body>
@@ -1020,6 +1342,11 @@ html, body {
       <button class="tb-btn" id="btn-settings" title="Settings">⚙ SETTINGS</button>
     </div>
   </header>
+
+  <!-- ── City nav strip (portrait phone only) ─────── -->
+  <div id="city-nav">
+    <!-- Items injected by buildCityNav() -->
+  </div>
 
   <!-- ── STAGE ──────────────────────────────────────── -->
   <main id="stage">
@@ -1095,6 +1422,14 @@ html, body {
             <option value="imperial">Imperial (°F, mph)</option>
           </select>
         </div>
+        <div class="form-row">
+          <label class="form-label">Font Size</label>
+          <select class="form-select" id="s-fontsize">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
       </div>
 
       <!-- API Key -->
@@ -1167,6 +1502,7 @@ let state = {
   theme:      'dark',
   locations:  JSON.parse(JSON.stringify(DEFAULT_LOCATIONS)),
   weather:    {},        // keyed by location index
+  fontSize:   'medium',  // 'small' | 'medium' | 'large'
   lastFetch:  null,
   nextFetch:  null,
 };
@@ -1248,13 +1584,41 @@ function fmtTime(d) {
 }
 
 /**
- * Return a Date object representing the current moment in a given IANA timezone.
- * Uses Intl.DateTimeFormat parts to extract y/m/d/h/min/s in local time, then
- * constructs a plain Date from those values — avoids the cross-browser
- * "Invalid Date" error from passing toLocaleString() output into new Date().
+ * Format a UTC offset in seconds as "UTC±HH:MM".
+ * Handles half-hour (e.g. India +05:30) and quarter-hour offsets.
+ */
+function offsetSecsToLabel(secs, prefix = 'UTC') {
+  const sign = secs < 0 ? '-' : '+';
+  const abs  = Math.abs(secs);
+  const h    = Math.floor(abs / 3600);
+  const m    = Math.round((abs % 3600) / 60);
+  return `${prefix}${sign}${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+/**
+ * Return a Date whose y/m/d/h/min/s fields reflect local time in the
+ * given timezone. Accepts either:
+ *   - an IANA name string (e.g. "America/Toronto")
+ *   - a UTC offset in seconds (number, e.g. 19800 for India +05:30)
+ *
+ * For IANA names we use Intl.DateTimeFormat parts (no toLocaleString).
+ * For numeric offsets we shift the UTC epoch and read the UTC fields,
+ * which sidesteps the lack of fixed half-hour-offset IANA identifiers.
  */
 function localDate(tz) {
   const now = new Date();
+  if (typeof tz === 'number') {
+    // Shift by offset seconds, read UTC fields as if they were local
+    const shifted = new Date(now.getTime() + tz * 1000);
+    return new Date(
+      shifted.getUTCFullYear(),
+      shifted.getUTCMonth(),
+      shifted.getUTCDate(),
+      shifted.getUTCHours(),
+      shifted.getUTCMinutes(),
+      shifted.getUTCSeconds(),
+    );
+  }
   const fmt = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz,
     year: 'numeric', month: '2-digit', day: '2-digit',
@@ -1262,7 +1626,7 @@ function localDate(tz) {
     hour12: false,
   });
   const p = Object.fromEntries(fmt.formatToParts(now).map(({type, value}) => [type, value]));
-  const h = p.hour === '24' ? 0 : parseInt(p.hour, 10);  // hour12:false can yield "24" at midnight
+  const h = p.hour === '24' ? 0 : parseInt(p.hour, 10);
   return new Date(
     parseInt(p.year,   10),
     parseInt(p.month,  10) - 1,
@@ -1274,6 +1638,7 @@ function localDate(tz) {
 }
 
 function getTZAbbr(tz) {
+  if (typeof tz === 'number') return offsetSecsToLabel(tz, 'GMT');
   try {
     const parts = new Intl.DateTimeFormat('en', {timeZone:tz, timeZoneName:'short'}).formatToParts(new Date());
     return parts.find(p=>p.type==='timeZoneName')?.value || tz;
@@ -1281,8 +1646,8 @@ function getTZAbbr(tz) {
 }
 
 function getUTCOffset(tz) {
+  if (typeof tz === 'number') return offsetSecsToLabel(tz);
   try {
-    // timeZoneName:'longOffset' gives "GMT-05:00" — reliable, no arithmetic needed
     const parts = new Intl.DateTimeFormat('en', {timeZone:tz, timeZoneName:'longOffset'}).formatToParts(new Date());
     const raw   = parts.find(p=>p.type==='timeZoneName')?.value || 'GMT+00:00';
     return raw.replace('GMT', 'UTC');
@@ -1357,8 +1722,7 @@ function buildHourlyPanel(idx) {
   const tz   = state.locations[idx].tz;
   // 2.5/forecast gives 3-hour slots in w.hourly (normalised from list[])
   const rows = (w.hourly || []).slice(0, 16).map(h => {
-    const t = new Date(h.dt * 1000).toLocaleTimeString('en-CA',
-      {timeZone:tz, hour:'2-digit', minute:'2-digit', hour12:true});
+    const t = fmtUnixTime(h.dt, tz);
     return `<div class="hourly-row">
       <div class="hourly-time">${t}</div>
       <div class="hourly-icon">${icon(h.weather[0].icon)}</div>
@@ -1376,10 +1740,17 @@ function buildDailyPanel(idx) {
   const tz    = state.locations[idx].tz;
   const daily = w.daily || [];   // pre-aggregated in normaliseForecast()
   const rows  = daily.slice(0, 6).map((d, i) => {
-    const dt  = new Date(d.dt * 1000);
+    const dt  = typeof tz === 'number'
+      ? new Date(d.dt * 1000 + tz * 1000)
+      : new Date(d.dt * 1000);
+    const dayStr = typeof tz === 'number'
+      ? dt.toUTCString().slice(0, 3)   // "Mon", "Tue" etc from UTC shifted date
+      : dt.toLocaleDateString('en-CA', {timeZone:tz, weekday:'short'});
     const day = i === 0 ? 'Today'
               : i === 1 ? 'Tomorrow'
-              : dt.toLocaleDateString('en-CA', {timeZone:tz, weekday:'short', month:'short', day:'numeric'});
+              : typeof tz === 'number'
+                ? `${dayStr} ${dt.toLocaleString('en-CA', {timeZone:'UTC', month:'short', day:'numeric'})}`
+                : dt.toLocaleDateString('en-CA', {timeZone:tz, weekday:'short', month:'short', day:'numeric'});
     return `<div class="daily-row">
       <div class="daily-day${i===0?' today':''}">${day}</div>
       <div class="daily-icon">${icon(d.weather[0].icon)}</div>
@@ -1416,6 +1787,15 @@ function buildPlaceholder(idx, what) {
 
 function fmtUnixTime(unix, tz) {
   if (!unix) return '—';
+  if (typeof tz === 'number') {
+    // Shift by offset, read UTC hours/minutes as local
+    const d = new Date(unix * 1000 + tz * 1000);
+    const h = d.getUTCHours();
+    const m = String(d.getUTCMinutes()).padStart(2, '0');
+    const period = h >= 12 ? 'p.m.' : 'a.m.';
+    const h12 = h % 12 || 12;
+    return `${h12}:${m} ${period}`;
+  }
   return new Date(unix*1000).toLocaleTimeString('en-CA', {timeZone:tz, hour:'2-digit', minute:'2-digit', hour12:true});
 }
 
@@ -1531,8 +1911,14 @@ function updateDots(idx, active) {
 function normaliseForecast(list, tz) {
   const byDay = {};
   for (const slot of list) {
-    const dateKey = new Date(slot.dt * 1000)
-      .toLocaleDateString('en-CA', {timeZone: tz});   // "2026-02-24"
+    // When tz is a numeric offset (seconds), compute local date via shift.
+    // When it's an IANA string, use Intl normally.
+    const slotDate = typeof tz === 'number'
+      ? new Date(slot.dt * 1000 + tz * 1000)
+      : new Date(slot.dt * 1000);
+    const dateKey = typeof tz === 'number'
+      ? `${slotDate.getUTCFullYear()}-${String(slotDate.getUTCMonth()+1).padStart(2,'0')}-${String(slotDate.getUTCDate()).padStart(2,'0')}`
+      : new Date(slot.dt * 1000).toLocaleDateString('en-CA', {timeZone: tz});
     if (!byDay[dateKey]) {
       byDay[dateKey] = { dt: slot.dt, slots: [], weather: slot.weather };
     }
@@ -1582,6 +1968,13 @@ async function fetchWeather() {
 
       const wData = await wRes.json();
       const fData = await fRes.json();
+
+      // Update the location's timezone from the API response.
+      // wData.timezone is the UTC offset in seconds (e.g. 19800 = +05:30).
+      // We store the raw seconds on loc.tz so localDate(), getTZAbbr(),
+      // and getUTCOffset() all produce correct results for cities with
+      // half-hour or quarter-hour offsets that Etc/GMT can't represent.
+      state.locations[idx].tz = wData.timezone;
 
       // Normalise into the shape our panel builders expect
       state.weather[idx] = {
@@ -1645,9 +2038,10 @@ document.getElementById('btn-fetch').addEventListener('click', fetchWeather);
 // ══════════════════════════════════════════════════════════════
 function openSettings() {
   // Populate fields
-  document.getElementById('s-apikey').value  = state.apiKey;
-  document.getElementById('s-units').value   = state.units;
-  document.getElementById('s-theme').value   = state.theme;
+  document.getElementById('s-apikey').value    = state.apiKey;
+  document.getElementById('s-units').value     = state.units;
+  document.getElementById('s-theme').value     = state.theme;
+  document.getElementById('s-fontsize').value  = state.fontSize || 'medium';
   renderLocationList();
   document.getElementById('settings-overlay').classList.add('open');
 }
@@ -1664,14 +2058,16 @@ document.getElementById('settings-overlay').addEventListener('click', e => {
 });
 
 document.getElementById('s-save').addEventListener('click', () => {
-  const newKey   = document.getElementById('s-apikey').value.trim();
-  const newUnits = document.getElementById('s-units').value;
-  const newTheme = document.getElementById('s-theme').value;
+  const newKey      = document.getElementById('s-apikey').value.trim();
+  const newUnits    = document.getElementById('s-units').value;
+  const newTheme    = document.getElementById('s-theme').value;
+  const newFontSize = document.getElementById('s-fontsize').value;
 
   const unitsChanged = newUnits !== state.units;
-  state.apiKey  = newKey;
-  state.units   = newUnits;
-  state.theme   = newTheme;
+  state.apiKey   = newKey;
+  state.units    = newUnits;
+  state.theme    = newTheme;
+  state.fontSize = newFontSize;
 
   // If units changed, clear cached data so it re-fetches in correct units
   if (unitsChanged) state.weather = {};
@@ -1683,8 +2079,11 @@ document.getElementById('s-save').addEventListener('click', () => {
   setStatus('Settings saved.', 'ok');
 });
 
+const FONT_SIZES = { small: '14px', medium: '16px', large: '18px' };
+
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', state.theme);
+  document.documentElement.style.fontSize = FONT_SIZES[state.fontSize || 'medium'];
 }
 
 // ── Location Search ────────────────────────────────────────────
@@ -1858,10 +2257,11 @@ document.getElementById('s-import-file').addEventListener('change', e => {
       const parsed = JSON.parse(ev.target.result);
       const imported = parsed.state || parsed;
       if (imported.locations) state.locations = imported.locations.slice(0, MAX_LOCATIONS);
-      if (imported.apiKey  !== undefined) state.apiKey  = imported.apiKey;
-      if (imported.units   !== undefined) state.units   = imported.units;
-      if (imported.theme   !== undefined) state.theme   = imported.theme;
-      if (imported.weather !== undefined) state.weather = imported.weather;
+      if (imported.apiKey    !== undefined) state.apiKey    = imported.apiKey;
+      if (imported.units     !== undefined) state.units     = imported.units;
+      if (imported.theme     !== undefined) state.theme     = imported.theme;
+      if (imported.fontSize  !== undefined) state.fontSize  = imported.fontSize;
+      if (imported.weather   !== undefined) state.weather   = imported.weather;
       applyTheme();
       saveState();
       renderLocationList();
@@ -1887,6 +2287,7 @@ window.addEventListener('resize', () => {
     Panther.Carousel.refresh();
     // Rebuild dots in case orientation changed
     CAROUSEL_IDS.forEach((_, idx) => buildDots(idx));
+    updateLayoutForMobile();
   }, 300);
 });
 
@@ -1898,12 +2299,111 @@ if ('serviceWorker' in navigator) {
   // Users can add a sw.js manually for full offline support
 }
 
+
+// ══════════════════════════════════════════════════════════════
+// MOBILE — City nav strip & scroll-snap city switching
+// ══════════════════════════════════════════════════════════════
+
+/**
+ * Returns true when we're in the horizontal scroll-snap mobile layout
+ * (portrait phones ≤ 600px wide).
+ */
+function isMobileScroll() {
+  return window.innerWidth <= 600;
+}
+
+/**
+ * Build (or rebuild) the city-nav tab strip shown on portrait phones.
+ * Each tab scrolls the stage to that city's cell.
+ */
+function buildCityNav() {
+  const nav = document.getElementById('city-nav');
+  if (!nav) return;
+  nav.innerHTML = state.locations.map((loc, i) => `
+    <div class="city-nav-item${i === 0 ? ' active' : ''}" data-idx="${i}"
+         onclick="scrollToCity(${i})">${loc.name}</div>
+  `).join('');
+}
+
+/**
+ * Scroll the stage to a specific city cell (portrait phone mode only).
+ */
+function scrollToCity(idx) {
+  const stage = document.getElementById('stage');
+  const cell  = document.getElementById(`cell-${idx}`);
+  if (!stage || !cell) return;
+  stage.scrollTo({ left: cell.offsetLeft, behavior: 'smooth' });
+}
+
+/**
+ * Update the active tab in the city-nav strip based on current scroll position.
+ */
+function updateCityNav(idx) {
+  document.querySelectorAll('.city-nav-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+/**
+ * Snap detection: fire when scroll settles on a city cell.
+ * Uses IntersectionObserver for efficiency — no scroll event polling.
+ */
+function initScrollObserver() {
+  if (!('IntersectionObserver' in window)) return;
+
+  const stage = document.getElementById('stage');
+  if (!stage) return;
+
+  const cells = Array.from(document.querySelectorAll('.cell'));
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!isMobileScroll()) return;
+    entries.forEach(entry => {
+      if (entry.intersectionRatio >= 0.6) {
+        const idx = parseInt(entry.target.id.split('-')[1], 10);
+        updateCityNav(idx);
+      }
+    });
+  }, {
+    root:      stage,
+    threshold: 0.6,
+  });
+
+  cells.forEach(cell => observer.observe(cell));
+}
+
+/**
+ * Adjust the stage top offset on mobile to account for the city-nav strip.
+ * The city-nav is 28px tall and sits between the header and the stage,
+ * but since #city-nav is a sibling of #stage in the grid, the grid
+ * row sizing handles this automatically. However, we need to ensure
+ * the #app grid updates when city-nav becomes visible.
+ */
+function updateLayoutForMobile() {
+  const isMobile = isMobileScroll();
+  const cityNav  = document.getElementById('city-nav');
+  const app      = document.getElementById('app');
+
+  if (cityNav) {
+    cityNav.style.display = isMobile ? 'flex' : 'none';
+  }
+
+  if (app) {
+    app.style.gridTemplateRows = isMobile
+      ? 'var(--header-h) 28px 1fr var(--footer-h)'
+      : 'var(--header-h) 1fr var(--footer-h)';
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 loadState();
 applyTheme();
 buildCarousels();
+buildCityNav();
+updateLayoutForMobile();
+initScrollObserver();
 updateTimestamps();
 setStatus('WorldDash ready' + (state.apiKey ? '' : ' — add API key in Settings'), state.apiKey ? 'ok' : '');
 
