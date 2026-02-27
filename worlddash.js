@@ -196,12 +196,30 @@ function startClock(idx) {
 // PANEL HTML BUILDERS
 // ==============================================================
 
+/**
+ * Returns the flagcdn.com URL for a 256px flag PNG given an ISO 3166-1
+ * alpha-2 country code (e.g. "CA" → Canadian flag).
+ * https://flagpedia.net/download/api
+ */
+function flagUrl(countryCode) {
+  if (!countryCode) return '';
+  //return `https://flagcdn.com/256x192/${countryCode.toLowerCase()}.png`;
+  return `https://flagcdn.com/w80/${countryCode.toLowerCase()}.png`;
+}
+
 function buildClockPanel(idx) {
-  const loc   = state.locations[idx];
-  const tz    = loc.tz;
-  const local = localDate(tz);
+  const loc      = state.locations[idx];
+  const tz       = loc.tz;
+  const local    = localDate(tz);
+  const country  = state.weather[idx]?.country || '';
+  const flagSrc  = flagUrl(country);
+  const flagHtml = flagSrc
+    ? `<img class="clock-flag" src="${flagSrc}" alt="${country} flag"
+           onerror="this.style.display='none'">`
+    : `<div class="clock-flag-placeholder"></div>`;
   return `
     <div class="clock-panel" id="clock-panel-${idx}">
+      ${flagHtml}
       <div class="clock-city">${loc.name}</div>
       <div class="clock-date">${fmtDate(local)}</div>
       <div class="clock-time">${fmtTime(local)}</div>
@@ -522,6 +540,8 @@ async function fetchWeather() {
 
       // Normalise into the shape our panel builders expect
       state.weather[idx] = {
+        // country code from sys.country (e.g. "CA", "IN") — used for flag
+        country: wData.sys?.country || '',
         // current — map 2.5/weather fields to internal shape
         current: {
           temp:       wData.main.temp,
@@ -547,8 +567,8 @@ async function fetchWeather() {
         daily: normaliseForecast(fData.list, loc.tz),
       };
 
-      // Refresh panels 1–4 (weather, hourly, daily, alerts)
-      for (let s = 1; s <= 4; s++) refreshPanel(idx, s);
+      // Refresh panels 0–4 (clock gets flag, weather/hourly/daily/alerts update)
+      for (let s = 0; s <= 4; s++) refreshPanel(idx, s);
       ok++;
     } catch(e) {
       console.error('Fetch failed for', loc.name, e);

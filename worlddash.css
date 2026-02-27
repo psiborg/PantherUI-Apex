@@ -251,6 +251,21 @@ html, body {
   pointer-events: none;
 }
 
+.clock-flag {
+  width: auto;
+  height: clamp(24px, 10vh, 24px);
+  max-width: 100%;
+  border-radius: 2px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.clock-flag-placeholder {
+  /* shown before first fetch — reserves no space */
+  display: none;
+}
+
 .clock-city {
   font-family: var(--font-head);
   font-size: clamp(1.1rem, 3.5vw, 1.8rem);
@@ -1056,6 +1071,7 @@ html, body {
 
   /* Clock — more compact vertical layout */
   .clock-panel { gap: 2px; padding: 10px 12px; }
+  .clock-flag  { height: clamp(32px, 8vw, 52px); }
   .clock-city  { font-size: clamp(1.2rem, 6vw, 1.6rem); }
   .clock-date  { font-size: clamp(0.58rem, 2vw, 0.7rem); margin-top: 2px; }
   .clock-time  { font-size: clamp(1.6rem, 8vw, 2.6rem); margin: 3px 0; }
@@ -1195,6 +1211,7 @@ html, body {
   .panther-Carousel-panelContent { height: calc(100% - 22px); }
 
   .clock-panel { gap: 1px; padding: 6px 10px; }
+  .clock-flag  { height: clamp(24px, 5vh, 36px); }
   .clock-city  { font-size: clamp(0.9rem, 3vw, 1.2rem); }
   .clock-date  { font-size: 0.55rem; margin-top: 1px; }
   .clock-time  { font-size: clamp(1rem, 4vw, 1.6rem); margin: 2px 0; }
