@@ -1,30 +1,6 @@
 # WorldDash
 
-A responsive Progressive Web App for displaying world clocks and weather information across multiple cities simultaneously. Built on [PantherUI Apex](../README.md) — each city is a 3D rotating carousel with five information panels.
-
----
-
-## Screenshot layout
-
-```
-┌─────────────────────────────────────────────────┐
-│  🐾 WorldDash   [⟳ FETCH] [1][2][3][4][5] [⚙]  │  ← Header
-├──────────────────┬──────────────────────────────┤
-│                  │                              │
-│    Toronto       │        Vancouver             │  ← 2 × 2 in landscape
-│    carousel      │        carousel              │
-│                  │                              │
-├──────────────────┼──────────────────────────────┤
-│                  │                              │
-│    Calgary       │        Halifax               │
-│    carousel      │        carousel              │
-│                  │                              │
-├──────────────────┴──────────────────────────────┤
-│  ● Ready                          Updated 6:15  │  ← Footer
-└─────────────────────────────────────────────────┘
-```
-
-In portrait mode the four carousels stack in a single column (1 × 4).
+A Progressive Web App that displays live weather and world clocks for up to four cities simultaneously. Each city gets a 3D rotating carousel (powered by PantherUI) with five panels: clock, current weather, hourly forecast, daily forecast, and alerts.
 
 ---
 
@@ -32,41 +8,123 @@ In portrait mode the four carousels stack in a single column (1 × 4).
 
 | File | Description |
 |---|---|
-| `worlddash.html` | Complete application — single self-contained file |
-| `PantherUI.js` | PantherUI Apex library (required) |
-| `PantherUI.css` | PantherUI Apex styles (required) |
+| `worlddash.html` | App shell, markup, SVG logo, settings dialog |
+| `worlddash.css` | All styles — design tokens, layout, panels, responsive breakpoints |
+| `worlddash.js` | Application logic — state, clocks, weather API, carousel wiring, settings |
+| `PantherUI.js` | 3D carousel library (see `README.md`) |
+| `PantherUI.css` | Carousel base styles |
+
+Serve all five files from the same directory. No build step required.
+
+---
+
+## Requirements
+
+- A free [OpenWeatherMap](https://openweathermap.org/api) API key (API 2.5, free tier)
+- A modern browser with ES6+, CSS Grid, and Pointer Events support
+- An internet connection for weather data and flag images ([flagcdn.com](https://flagcdn.com))
 
 ---
 
 ## Getting Started
 
-1. Place `worlddash.html`, `PantherUI.js`, and `PantherUI.css` in the same folder.
-2. Open `worlddash.html` in a browser (or serve over HTTP/HTTPS for PWA features).
-3. Click **⚙ Settings**, paste your OpenWeatherMap API key, and click **Save**.
-4. Click **⟳ Fetch** to load weather data.
+1. Open `worlddash.html` in a browser (or serve from a local server)
+2. Click **⚙ SETTINGS**
+3. Enter your OpenWeatherMap API key
+4. Optionally add or reorder cities
+5. Click **Save**, then **⟳ FETCH**
 
-### Getting a free API key
+---
 
-1. Sign up at [openweathermap.org](https://openweathermap.org/api)
-2. Go to **API keys** in your account dashboard
-3. Copy your default key (or generate a new one)
-4. New keys activate within a few minutes
+## Layout
 
-WorldDash uses the **Current Weather** (`data/2.5/weather`) and **5 Day Forecast** (`data/2.5/forecast`) endpoints — both included in the free tier. Each fetch makes **2 requests per location** (8 total for 4 cities).
+### Desktop / Tablet (> 768px)
+Four cells in a **2 × 2** grid, all visible simultaneously.
+
+### Tablet portrait (601 – 768px)
+Two cells in a **2 × 2** grid (all four visible).
+
+### Mobile portrait (≤ 600px)
+Single column, **4 rows of 50 vh** each. The top two carousels are visible; scroll down to reveal the bottom two. Each row snaps into place.
+
+### Mobile landscape (≤ 600px landscape)
+**2 × 2** grid, all four visible — no scrolling required.
 
 ---
 
 ## Panels
 
-Each carousel has five panels, navigated by dragging, flicking, or using the toolbar number buttons.
+Each carousel has five panels, accessible by dragging/swiping or using the **1 – 5** toolbar buttons.
 
-| Panel | Content |
-|---|---|
-| **1 — Clock** | City name, live date, real-time ticking clock, timezone abbreviation (e.g. EST), UTC offset |
-| **2 — Weather** | Current conditions: icon, temperature, feels like, description, humidity, wind speed & direction, visibility, cloud cover, pressure, sunrise, sunset |
-| **3 — Hourly** | 3-hour forecast slots for the next 48 hours: time, icon, description, temperature, precipitation probability |
-| **4 — Daily** | 6-day forecast aggregated from 3-hour slots: day, icon, description, high, low |
-| **5 — Alerts** | Not available in API 2.5 free tier (requires One Call API 3.0) |
+| # | Label | Content |
+|---|---|---|
+| 1 | CLOCK | Country flag, city name, live local time, date, timezone abbreviation, UTC offset |
+| 2 | WEATHER | Current temperature, feels-like, conditions, wind, humidity, pressure, visibility, sunrise/sunset |
+| 3 | HOURLY | 16-slot 3-hour forecast — time, icon, description, temperature, precipitation probability |
+| 4 | DAILY | 6-day forecast — day, icon, description, high/low temperatures |
+| 5 | ALERTS | Weather alerts (requires OpenWeatherMap One Call API 3.0; shows info panel on free tier) |
+
+---
+
+## Settings
+
+Open via **⚙ SETTINGS**.
+
+| Setting | Options | Description |
+|---|---|---|
+| Theme | Dark / Light | Colour scheme |
+| Units | Metric / Imperial | °C + m/s or °F + mph |
+| Font Size | Small (16px) / Medium (20px) / Large (24px) | Root font size, scales all UI elements |
+| Snap Easing | 12 options | CSS transition used when the carousel snaps to a panel |
+| Swipe Sensitivity | 0.5 – 5.0× | How far you need to drag to rotate one panel. Default: 2.0× |
+| API Key | Text | OpenWeatherMap API key (stored in localStorage) |
+| Locations | Search + reorder | Up to 4 cities; drag to reorder, ✕ to remove |
+| Export / Import | JSON | Round-trip all settings and weather cache |
+
+Settings are persisted to `localStorage` under the key `worlddash_v2`.
+
+---
+
+## Locations
+
+Each location object:
+
+```json
+{
+  "name": "Toronto",
+  "country": "CA",
+  "lat": 43.7001,
+  "lon": -79.4163,
+  "tz": "America/Toronto"
+}
+```
+
+`tz` accepts either an IANA timezone string (`"America/Toronto"`) or a raw UTC offset in seconds as returned by the OpenWeatherMap API (e.g. `19800` for UTC+5:30). Half-hour and quarter-hour offsets (India, Iran, Nepal, etc.) are handled correctly.
+
+After a successful fetch, `tz` is updated from the API response so the clock and forecast times always reflect the city's actual offset.
+
+Default locations: Toronto, Vancouver, Calgary, Halifax.
+
+---
+
+## Weather API
+
+WorldDash uses **OpenWeatherMap API 2.5** (free tier). Each fetch fires two requests per location:
+
+```
+GET /data/2.5/weather?lat={lat}&lon={lon}&units={units}&appid={key}
+GET /data/2.5/forecast?lat={lat}&lon={lon}&units={units}&appid={key}
+```
+
+City search uses the Geocoding API:
+
+```
+GET /geo/1.0/direct?q={city}&limit=5&appid={key}
+```
+
+Weather data is cached in state and saved to localStorage. A fetch is skipped if data is less than 10 minutes old.
+
+Country flags are loaded from `https://flagcdn.com/256x192/{cc}.png` using the `sys.country` field in the weather response.
 
 ---
 
@@ -74,83 +132,72 @@ Each carousel has five panels, navigated by dragging, flicking, or using the too
 
 | Button | Action |
 |---|---|
-| **⟳ Fetch** | Fetch fresh weather data for all locations |
-| **1 – 5** | Jump all four carousels to the same panel simultaneously |
-| **⚙ Settings** | Open the settings dialog |
+| ⟳ FETCH | Fetch fresh weather for all locations |
+| 1 – 5 | Turn all carousels to that panel simultaneously |
+| ⚙ SETTINGS | Open the settings dialog |
 
 ---
 
-## Settings
+## Persistence
 
-### Display
-- **Theme** — Dark or Light
-- **Units** — Metric (°C, m/s) or Imperial (°F, mph)
+All state is serialised to JSON and stored in `localStorage` (`worlddash_v2`). The stored shape:
 
-### API
-- **API Key** — Your OpenWeatherMap key, stored in `localStorage`
+```json
+{
+  "apiKey": "",
+  "units": "metric",
+  "theme": "dark",
+  "fontSize": "medium",
+  "sensitivity": 2.0,
+  "easing": "easeInOutCubic",
+  "locations": [...],
+  "weather": {},
+  "lastFetch": null,
+  "nextFetch": null
+}
+```
 
-### Locations
-- **Search** — Find cities by name using the OWM Geocoding API; up to 4 locations
-- **Reorder** — Drag and drop locations to rearrange the carousel grid
-- **Remove** — Delete a location (minimum 1 required)
-
-> Changing units clears cached weather data so the next fetch returns values in the correct unit.
-
-### Data
-- **Export** — Download all state (locations, weather cache, settings) as a JSON file
-- **Import** — Restore state from a previously exported JSON file
-
----
-
-## Auto-fetch
-
-On load, if an API key is configured and the last fetch was more than **10 minutes** ago, WorldDash automatically fetches fresh data after a 1.2 second delay (to allow the carousels to finish rendering).
+Use **Export JSON** to back up settings, and **Import JSON** to restore them across devices.
 
 ---
 
-## Default Locations
+## Architecture
 
-| # | City | Timezone |
-|---|---|---|
-| 1 | Toronto, CA | America/Toronto |
-| 2 | Vancouver, CA | America/Vancouver |
-| 3 | Calgary, CA | America/Edmonton |
-| 4 | Halifax, CA | America/Halifax |
+```
+worlddash.html          Shell, dialog markup
+worlddash.css
+  ├── Design tokens      :root CSS custom properties
+  ├── App chrome         header, stage, grid, footer
+  ├── Panel styles       clock, weather, hourly, daily, alerts
+  ├── Settings dialog
+  └── Responsive         portrait, landscape, mobile, tablet breakpoints
 
----
-
-## Keyboard & Gesture Interaction
-
-Each carousel inherits PantherUI's full input system:
-
-- **Drag / flick** left or right to rotate panels — tracks pointer 1:1
-- **Momentum snapping** — fast flicks carry rotation one extra panel
-- **Arrow keys** (`←` `→`) rotate the carousel under focus
-- **Touch** — full Pointer Events API support (mouse, touch, stylus unified)
-
----
-
-## Responsive Layout
-
-Layout switches automatically based on device orientation:
-
-- **Portrait** — single column, 4 rows (1 × 4)
-- **Landscape** — two columns, 2 rows (2 × 2)
-
-Carousel geometry recalculates automatically on resize and orientation change (debounced 300 ms).
-
----
-
-## Data & Privacy
-
-All data is stored exclusively in the browser's `localStorage` under the key `worlddash_v2`. Nothing is sent to any server other than OpenWeatherMap's API. Your API key never leaves the browser.
+worlddash.js
+  ├── Constants          LS_KEY, MAX_LOCATIONS, CAROUSEL_IDS, PANEL_LABELS
+  ├── State              apiKey, units, theme, fontSize, sensitivity, easing,
+  │                      locations, weather, lastFetch, nextFetch
+  ├── Persistence        loadState(), saveState()
+  ├── Utilities          fmtTemp(), fmtWind(), fmtPop(), fmtDate(), fmtTime(),
+  │                      fmtUnixTime(), icon(), offsetSecsToLabel()
+  ├── Timezone           localDate(), getTZAbbr(), getUTCOffset()
+  ├── Clock              tickClock(), startClock()
+  ├── Panel builders     buildClockPanel(), buildWeatherPanel(),
+  │                      buildHourlyPanel(), buildDailyPanel(),
+  │                      buildAlertsPanel(), buildPlaceholder()
+  ├── Carousel setup     buildPanelHTML(), initCarousels(),
+  │                      buildCarousels(), buildCarouselsDeferred(),
+  │                      refreshPanel()
+  ├── Fetch              fetchWeather(), normaliseForecast()
+  ├── Settings           openSettings(), closeSettings(), applyTheme(),
+  │                      populateEasingDropdown(), updateSensitivityLabel(),
+  │                      searchLocations(), renderLocationList()
+  └── Init               loadState → applyTheme → buildCarouselsDeferred
+```
 
 ---
 
-## Technical Notes
+## Browser Support
 
-**Timezone handling** — City clocks use `Intl.DateTimeFormat` with `formatToParts()` to extract local time values, avoiding the cross-browser `Invalid Date` error that occurs when passing locale-formatted strings back into `new Date()`. UTC offsets are read directly from `timeZoneName: 'longOffset'` (e.g. `GMT-05:00`).
+Requires: CSS Grid, CSS Custom Properties, Pointer Events API, `Intl.DateTimeFormat.formatToParts`, `IntersectionObserver`, `fetch`, `localStorage`.
 
-**Forecast aggregation** — The 2.5 `/forecast` endpoint returns 3-hour slots. WorldDash groups these by local calendar date (in the city's timezone) and picks the noon-nearest slot for the representative weather icon and description, tracking per-day min/max temperatures across all slots.
-
-**Timezone guessing** — When adding a city via search, WorldDash maps the country + state/province from the geocoding result to an IANA timezone string. This covers Canada, the US, UK, and Australia; other regions fall back to a rough `Etc/GMT±N` estimate from longitude.
+Tested on: Chrome 120+, Firefox 121+, Safari 17+, Chrome for Android, Safari for iOS.

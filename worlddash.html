@@ -157,6 +157,23 @@
             <option value="large">Large</option>
           </select>
         </div>
+        <div class="form-row">
+          <label class="form-label">Snap Easing</label>
+          <select class="form-select" id="s-easing">
+            <!-- Options injected by populateEasingDropdown() -->
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Swipe Sensitivity</label>
+          <div class="slider-wrap">
+            <span class="slider-lo">Low</span>
+            <input type="range" class="form-range" id="s-sensitivity"
+                   min="0.5" max="5.0" step="0.1" value="2.0"
+                   oninput="updateSensitivityLabel(this.value)"/>
+            <span class="slider-hi">High</span>
+            <span class="slider-val" id="s-sensitivity-label">2.0×</span>
+          </div>
+        </div>
       </div>
 
       <!-- API Key -->

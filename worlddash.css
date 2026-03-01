@@ -393,7 +393,7 @@ html, body {
 
 .hourly-row {
   display: grid;
-  grid-template-columns: 52px 28px 1fr 44px 44px;
+  grid-template-columns: 4.5rem 2.4em 1fr 2.5rem 1.8rem;
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
@@ -407,6 +407,7 @@ html, body {
   font-size: 0.62rem;
   color: var(--text3);
   letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .hourly-icon { font-size: 1rem; text-align: center; }
@@ -444,7 +445,7 @@ html, body {
 
 .daily-row {
   display: grid;
-  grid-template-columns: 60px 28px 1fr 36px 36px;
+  grid-template-columns: 4.5rem 2.4em 1fr 2.5rem 2.5rem;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
@@ -458,6 +459,7 @@ html, body {
   font-size: 0.63rem;
   color: var(--text2);
   letter-spacing: 0.06em;
+  white-space: nowrap;
 }
 
 .daily-day.today { color: var(--teal); }
@@ -786,6 +788,67 @@ html, body {
 
 .form-select:focus { border-color: var(--teal); outline: none; }
 
+/* Range slider wrapper */
+.slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.slider-lo,
+.slider-hi {
+  font-size: 0.55rem;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.slider-val {
+  font-size: 0.65rem;
+  color: var(--teal);
+  letter-spacing: 0.06em;
+  min-width: 2.8em;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.form-range {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.form-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(30,200,160,0.4);
+}
+
+.form-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(30,200,160,0.4);
+}
+
+.form-range::-webkit-slider-runnable-track { height: 3px; }
+.form-range::-moz-range-track { height: 3px; background: var(--border2); border-radius: 2px; }
+
 /* Search row */
 .search-row {
   display: flex;
@@ -1088,22 +1151,20 @@ html, body {
 
   /* Hourly rows — taller tap targets, simpler columns */
   .hourly-row {
-    grid-template-columns: 48px 24px 1fr 40px;
+    grid-template-columns: 4.5rem 2.4em 1fr 2.5rem 1.8rem;
     padding: 8px 10px;
-    gap: 4px;
+    gap: 6px;
     min-height: 44px;
   }
-  /* Hide precipitation column on very narrow screens */
-  .hourly-pop { display: none; }
   .hourly-time { font-size: 0.6rem; }
   .hourly-desc { font-size: 0.58rem; }
   .hourly-temp { font-size: 0.65rem; }
 
   /* Daily rows */
   .daily-row {
-    grid-template-columns: 52px 24px 1fr 34px 34px;
+    grid-template-columns: 4.5rem 2.4em 1fr 2.5rem 2.5rem;
     padding: 8px 10px;
-    gap: 4px;
+    gap: 6px;
     min-height: 44px;
   }
   .daily-day  { font-size: 0.6rem; }
@@ -1136,6 +1197,7 @@ html, body {
   .form-row { flex-direction: column; align-items: flex-start; gap: 5px; }
   .form-label { flex: none; }
   .form-select, .form-input { width: 100%; }
+  .slider-wrap { width: 100%; }
 
   .ie-row { flex-direction: column; }
   .btn-sm { min-height: 44px; font-size: 0.65rem; }

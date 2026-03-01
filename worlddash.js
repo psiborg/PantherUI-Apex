@@ -24,8 +24,10 @@ let state = {
   theme:      'dark',
   locations:  JSON.parse(JSON.stringify(DEFAULT_LOCATIONS)),
   weather:    {},        // keyed by location index
-  fontSize:   'medium',  // 'small' | 'medium' | 'large'
-  lastFetch:  null,
+  fontSize:    'medium',  // 'small' | 'medium' | 'large'
+  sensitivity: 2.0,       // carousel drag multiplier (0.5-5.0)
+  easing:      'easeInOutCubic', // snap-transition easing key
+  lastFetch:   null,
   nextFetch:  null,
 };
 
@@ -382,7 +384,7 @@ function initCarousels() {
       Panther.Carousel.init({
         id: cid,
         backgroundColor: 'var(--panel-bg)',
-        easing: 'easeInOutCubic',
+        easing: state.easing || 'easeInOutCubic',
         callback(c) {
           updateDots(idx, c.sideIndex % c.panelCount);
         },
@@ -606,6 +608,11 @@ function openSettings() {
   document.getElementById('s-units').value     = state.units;
   document.getElementById('s-theme').value     = state.theme;
   document.getElementById('s-fontsize').value  = state.fontSize || 'medium';
+  const senEl = document.getElementById('s-sensitivity');
+  if (senEl) { senEl.value = state.sensitivity ?? 2.0; updateSensitivityLabel(state.sensitivity ?? 2.0); }
+  populateEasingDropdown();
+  const easEl = document.getElementById('s-easing');
+  if (easEl) easEl.value = state.easing || 'easeInOutCubic';
   renderLocationList();
   document.getElementById('settings-overlay').classList.add('open');
 }
@@ -625,13 +632,17 @@ document.getElementById('s-save').addEventListener('click', () => {
   const newKey      = document.getElementById('s-apikey').value.trim();
   const newUnits    = document.getElementById('s-units').value;
   const newTheme    = document.getElementById('s-theme').value;
-  const newFontSize = document.getElementById('s-fontsize').value;
+  const newFontSize    = document.getElementById('s-fontsize').value;
+  const newSensitivity = parseFloat(document.getElementById('s-sensitivity').value);
+  const newEasing      = document.getElementById('s-easing').value;
 
   const unitsChanged = newUnits !== state.units;
   state.apiKey   = newKey;
   state.units    = newUnits;
   state.theme    = newTheme;
-  state.fontSize = newFontSize;
+  state.fontSize    = newFontSize;
+  state.sensitivity = newSensitivity;
+  state.easing      = newEasing;
 
   // If units changed, clear cached data so it re-fetches in correct units
   if (unitsChanged) state.weather = {};
@@ -643,11 +654,52 @@ document.getElementById('s-save').addEventListener('click', () => {
   setStatus('Settings saved.', 'ok');
 });
 
-const FONT_SIZES = { small: '14px', medium: '16px', large: '18px' };
+const FONT_SIZES = { small: '16px', medium: '20px', large: '24px' };
 
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', state.theme);
   document.documentElement.style.fontSize = FONT_SIZES[state.fontSize || 'medium'];
+  if (typeof Panther !== 'undefined' && Panther.Carousel) {
+    if (Panther.Carousel.setSensitivity)  Panther.Carousel.setSensitivity(state.sensitivity ?? 2.0);
+    if (Panther.Carousel.setAllEasings)   Panther.Carousel.setAllEasings(state.easing || 'easeInOutCubic');
+  }
+}
+
+function updateSensitivityLabel(val) {
+  const el = document.getElementById('s-sensitivity-label');
+  if (el) el.textContent = parseFloat(val).toFixed(1) + '×';
+}
+
+/**
+ * Populate the easing <select> with all keys from Panther.Carousel.EASINGS.
+ * Called each time Settings opens so it always reflects the current library.
+ */
+function populateEasingDropdown() {
+  const sel = document.getElementById('s-easing');
+  if (!sel || !Panther.Carousel?.EASINGS) return;
+  // Friendly display labels for each easing key
+  const LABELS = {
+    'ease':           'Ease',
+    'linear':         'Linear',
+    'easeIn':         'Ease In',
+    'easeOut':        'Ease Out',
+    'easeInOut':      'Ease In-Out',
+    'easeInOutSine':  'Ease In-Out Sine',
+    'easeInOutCubic': 'Ease In-Out Cubic (default)',
+    'easeInOutQuart': 'Ease In-Out Quart',
+    'easeInOutQuint': 'Ease In-Out Quint',
+    'easeOutBack':    'Ease Out Back (overshoot)',
+    'easeOutExpo':    'Ease Out Expo (snappy)',
+    'easeInOutBack':  'Ease In-Out Back (elastic)',
+  };
+  if (sel.options.length === 0) {
+    Object.keys(Panther.Carousel.EASINGS).forEach(key => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = LABELS[key] || key;
+      sel.appendChild(opt);
+    });
+  }
 }
 
 // -- Location Search --------------------------------------------
@@ -824,8 +876,10 @@ document.getElementById('s-import-file').addEventListener('change', e => {
       if (imported.apiKey    !== undefined) state.apiKey    = imported.apiKey;
       if (imported.units     !== undefined) state.units     = imported.units;
       if (imported.theme     !== undefined) state.theme     = imported.theme;
-      if (imported.fontSize  !== undefined) state.fontSize  = imported.fontSize;
-      if (imported.weather   !== undefined) state.weather   = imported.weather;
+      if (imported.fontSize    !== undefined) state.fontSize    = imported.fontSize;
+      if (imported.sensitivity !== undefined) state.sensitivity = imported.sensitivity;
+      if (imported.easing      !== undefined) state.easing      = imported.easing;
+      if (imported.weather     !== undefined) state.weather     = imported.weather;
       applyTheme();
       saveState();
       renderLocationList();
