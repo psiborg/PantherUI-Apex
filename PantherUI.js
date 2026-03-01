@@ -50,6 +50,9 @@ class Carousel3D {
     this.prevStyle       = {};
     this.callback        = null;
     this.callbackBreak   = false;
+    // Drag sensitivity multiplier: 1.0 = one full panel-width to rotate one face.
+    // Values > 1 mean less distance required (more sensitive).
+    this.sensitivity     = 1.0;
   }
 
   /**
@@ -209,7 +212,14 @@ Panther.Carousel = (() => {
 
   /**
    * Attach Pointer Event listeners to a carousel element.
-   * Drag is intentionally allowed anywhere on the carousel (not just the title bar).
+   * Drag is intentionally allowed anywhere on the carousel (not just the title bar)
+   * but the maximize button is excluded via a small click-vs-drag heuristic.
+   */
+  /**
+   * Attach a direct click listener to every maximize button inside a carousel.
+   * Called once at init (for pre-existing panels) and after every addPanel().
+   * Direct listeners bypass the 3D hit-testing ambiguity that prevents click
+   * events from bubbling reliably through preserve-3d subtrees to the container.
    */
   function addPointerListeners(elem, c) {
     const drag = makeDragState();
@@ -244,16 +254,16 @@ Panther.Carousel = (() => {
         c.element.classList.add('is-dragging');
       }
 
-      // Convert pixel delta → degrees.
+      // Convert pixel delta → degrees, scaled by sensitivity.
       // Positive dx (drag right) → positive rotateY → face follows finger.
-      const rawRotation = drag.startRotation + dx * (c.theta / c.panelSize);
+      const rawRotation = drag.startRotation + dx * (c.theta / c.panelSize) * c.sensitivity;
       applyRawRotation(c, rawRotation);
       c.rotation = rawRotation;
 
       // Track instantaneous velocity (deg/ms) using last two frames
       const dt = ev.timeStamp - drag.lastT;
       if (dt > 0) {
-        drag.velocity = (ev.clientX - drag.lastX) * (c.theta / c.panelSize) / dt;
+        drag.velocity = (ev.clientX - drag.lastX) * (c.theta / c.panelSize) * c.sensitivity / dt;
       }
       drag.lastX = ev.clientX;
       drag.lastT = ev.timeStamp;
@@ -488,5 +498,22 @@ Panther.Carousel = (() => {
     refresh();
   }
 
-  return { init, refresh, turnNext, turnPrev, turnTo, maximize, restore, setEasing, EASINGS, removeLastPanel, all };
+  /**
+   * Set drag sensitivity for all carousels.
+   * @param {number} value - Multiplier: 1.0 = default, 2.0 = twice as sensitive
+   */
+  function setSensitivity(value) {
+    const s = Math.max(0.5, Math.min(5.0, value));
+    Object.values(all).forEach(c => { c.sensitivity = s; });
+  }
+
+  /**
+   * Set the snap-transition easing for all carousels at once.
+   * @param {string} easing - Named key from EASINGS or raw CSS transition string
+   */
+  function setAllEasings(easing) {
+    Object.keys(all).forEach(cid => setEasing(cid, easing));
+  }
+
+  return { init, refresh, turnNext, turnPrev, turnTo, maximize, restore, setEasing, setAllEasings, setSensitivity, EASINGS, removeLastPanel, all };
 })();
