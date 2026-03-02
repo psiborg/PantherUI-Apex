@@ -2,9 +2,19 @@
 
 A lightweight 3D carousel UI component library. Panels rotate on a CSS `rotateY` cylinder using the Pointer Events API for unified mouse, touch, and stylus input.
 
-Originally by Jim Ing (@jim_ing) for BlackBerry Limited (2013–2014). Refactored to modern ES6+ (2024).
+![Screenshot](screenshot.png)
+
+Originally by Jim Ing (@jim_ing) for BlackBerry Limited (2013–2014). Refactored to modern ES6+ (2026).
 
 Licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+---
+
+### Demos
+
+- [Full](demo.html)
+- [Basic](demo-basic.html)
+- [WorldDash](worlddash.html) - displays world clocks with live weather for up to four cities
 
 ---
 
