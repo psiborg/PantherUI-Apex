@@ -1,4 +1,4 @@
-# PantherUI
+# PantherUI v2.0
 
 A lightweight 3D carousel UI component library. Panels rotate on a CSS `rotateY` cylinder using the Pointer Events API for unified mouse, touch, and stylus input.
 
