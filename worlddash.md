@@ -2,10 +2,24 @@
 
 A Progressive Web App that displays world clocks with live weather for up to four cities simultaneously. Each city gets a 3D rotating carousel (powered by PantherUI) with five panels: clock, current weather, hourly forecast, daily forecast, and alerts.
 
+**Screenshot 1: World clocks**
+
 ![World clocks](worlddash1.png)
+
+**Screenshot 2: Current weather**
+
 ![Current weather](worlddash2.png)
+
+**Screenshot 3: Hourly forecast**
+
 ![Hourly forecast](worlddash3.png)
+
+**Screenshot 4: Daily forecast**
+
 ![Daily forecast](worlddash4.png)
+
+**Screenshot 5: Settings**
+
 ![Settings](worlddash6a.png)
 
 ---
